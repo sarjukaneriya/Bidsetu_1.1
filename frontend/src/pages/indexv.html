@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Auction Detail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    .rounded-md
+    {
+     height: 600px;
+     width: 500px;
+    
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white p-10 font-sans">
+
+  <div class="flex flex-wrap md:flex-nowrap gap-8">
+    
+    <!-- Left: Product Image -->
+    <img class="rounded-md " src="https://media.istockphoto.com/id/532570264/photo/multicolrored-plastic-resins.jpg?s=612x612&w=0&k=20&c=Q8qGcVg8g6kpPZW1k-dxOUhm32_R3Qyr5OoTvxQFDJM=" alt="Product Image" />
+
+    <!-- Right: Auction Info -->
+    <div class="flex-1 flex flex-col gap-6">
+      
+      <!-- Auction Title -->
+      <h2 class="text-3xl font-extrabold">PP Granules</h2>
+      
+      <!-- Category & Location Tags -->
+      <div class="flex gap-3 text-gray-300 flex-wrap">
+        <span class="px-4 py-1 border border-gray-600 rounded-full hover:bg-blue-500 hover:text-white cursor-pointer">Raw material</span>
+        <span class="px-4 py-1 border border-gray-600 rounded-full hover:bg-blue-500 hover:text-white cursor-pointer">Ahemdabad</span>
+      </div>
+
+      <!-- Seller Info -->
+      <div class="border-t border-gray-700 pt-4">
+        <span class="block font-medium">Buyer</span>
+        <div class="flex items-center gap-3 mt-2">
+          <img src="https://ui-avatars.com/api/?name=John+Doe&background=random" class="w-10 h-10 rounded-full" />
+          <a href="#" class="font-medium text-blue-400">John Doe</a>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-4 font-bold">
+        <button class="bg-blue-600 px-5 py-2 rounded-xl">Details</button>
+        <button class="bg-gray-800 px-5 py-2 rounded-xl">Bids</button>
+      </div>
+
+      <!-- Description -->
+      <div class="border-t border-gray-700 pt-4">
+        <h3 class="text-lg font-medium mb-1">Description</h3>
+        <p class="text-gray-300">This is the description of the auction item. It gives an overview of the product.</p>
+      </div>
+
+      <!-- Bids Section -->
+      <div class="border-t border-gray-700 pt-4 max-h-[200px] overflow-y-auto">
+        <h3 class="text-lg font-medium mb-2">Bids</h3>
+
+        <!-- Bid 1 -->
+        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg mb-2">
+          <div class="flex items-center gap-3">
+            <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=random" class="w-10 h-10 rounded-full" />
+            <span>Jane Smith</span>
+          </div>
+          <span>$1200</span>
+        </div>
+
+        <!-- Bid 2 -->
+        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg mb-2">
+          <div class="flex items-center gap-3">
+            <img src="https://ui-avatars.com/api/?name=Ravi+Kumar&background=random" class="w-10 h-10 rounded-full" />
+            <span>Ravi Kumar</span>
+          </div>
+          <span>$1180</span>
+        </div>
+
+        <!-- Bid 3 -->
+        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg mb-2">
+          <div class="flex items-center gap-3">
+            <img src="https://ui-avatars.com/api/?name=Leena+George&background=random" class="w-10 h-10 rounded-full" />
+            <span>Leena George</span>
+          </div>
+          <span>$1150</span>
+        </div>
+
+      </div>
+
+      <!-- Price + Timer -->
+      <div class="border-t border-gray-700 pt-4 flex justify-between">
+        <div>
+          <h3 class="font-medium">Current Bid</h3>
+          <p class="text-gray-300">$1150</p>
+        </div>
+        <div>
+          <h3 class="font-medium">Time Remaining</h3>
+          <p class="text-gray-300">00:12:45</p>
+        </div>
+      </div>
+
+      <!-- Bid Form -->
+      <form class="flex gap-4 pt-4">
+        <input type="number" placeholder="Enter bid amount" class="bg-gray-800 text-white px-4 py-2 rounded-lg w-full" />
+        <button type="submit" class="bg-green-500 hover:bg-green-600 px-6 py-2 rounded-lg text-white font-bold">Place Bid</button>
+      </form>
+
+    </div>
+  </div>
+
+</body>
+</html>

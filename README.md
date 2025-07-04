@@ -3,9 +3,6 @@
 
 This project is built using the MERN (MongoDB, Express.js, React.js, Node.js) stack.
 
-## Demo Video
-
-[![Watch the video](https://img.youtube.com/vi/vWLnbGh8oV0/0.jpg)](https://www.youtube.com/watch?v=vWLnbGh8oV0)
 
 
 
@@ -78,13 +75,6 @@ Create a `.env` file in the backend directory of the project and add the followi
 - CLOUDINARY_API_SECRET=?
 
 - STRIPE_KEY=?
-
-
-## Chat bot Configuration
-
-- Follow these steps: (https://docs.flowiseai.com/getting-started)
-
-- Then follow these videos : (https://youtube.com/playlist?list=PL4HikwTaYE0H7wBxhvQqxYcKOkZ4O3zXh&si=uODePiis-Mdmkp2w)
 
 
 ## Contributing

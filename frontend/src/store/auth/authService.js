@@ -23,7 +23,13 @@ const login = async (user) => {
         localStorage.setItem("user", JSON.stringify(response.data.data.user));
     } 
 
-
+    // Validate and store token if provided
+    if(response.data.data.token){
+        const token = response.data.data.token;
+        if (typeof token === 'string' && token.length > 10 && token.includes('.')) {
+            localStorage.setItem("token", token);
+        }
+    }
 
     return response.data;
    
@@ -34,6 +40,7 @@ const logout = async () => {
 
     const response = await axios.post(`${API_URL}/users/logout`,{},{withCredentials: true});
     localStorage.removeItem('user');
+    localStorage.removeItem('token'); // Clean up token as well
     window.location.href = '/';
     return response.data;
 };

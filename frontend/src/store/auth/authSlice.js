@@ -1,5 +1,6 @@
 import {createSlice , createAsyncThunk} from "@reduxjs/toolkit";
 import authService from "./authService";
+import businessVerificationService from "./businessVerificationService";
 
 const user = JSON.parse(localStorage.getItem("user"));
 
@@ -96,6 +97,32 @@ export const getCurrentUser= createAsyncThunk('auth/getCurrentUser', async(_, th
 export const updateProfile= createAsyncThunk('auth/updateProfile', async(payload, thunkAPI) =>{
     try {
         return await authService.updateProfile(payload);
+        
+    } catch (error) {
+        const message =(error.response && error.response.data.message) || error.message;
+        console.log(message, "error message")
+        
+        return thunkAPI.rejectWithValue({message,isError:true});
+    }
+    
+})
+
+export const submitBusinessVerification = createAsyncThunk('auth/submitBusinessVerification', async(payload, thunkAPI) =>{
+    try {
+        return await businessVerificationService.submitBusinessVerification(payload);
+        
+    } catch (error) {
+        const message =(error.response && error.response.data.message) || error.message;
+        console.log(message, "error message")
+        
+        return thunkAPI.rejectWithValue({message,isError:true});
+    }
+    
+})
+
+export const updateBusinessVerification = createAsyncThunk('auth/updateBusinessVerification', async(payload, thunkAPI) =>{
+    try {
+        return await businessVerificationService.updateBusinessVerification(payload);
         
     } catch (error) {
         const message =(error.response && error.response.data.message) || error.message;
@@ -265,7 +292,41 @@ const authSlice = createSlice({
         state.isLoading=false;
         state.isError=true;
         state.message=action.payload.message;
-            });
+    })
+    .addCase(submitBusinessVerification.pending, (state)=>{
+        state.isLoading=true;
+        state.isError=false;
+        state.isSuccess=false;
+        state.message="";
+    })
+    .addCase(submitBusinessVerification.fulfilled, (state, action)=>{
+        state.isLoading=false;
+        state.isSuccess=true;
+        state.message=action.payload.message;
+        state.user=action.payload.data;
+    })
+    .addCase(submitBusinessVerification.rejected, (state, action)=>{
+        state.isLoading=false;
+        state.isError=true;
+        state.message=action.payload.message;
+    })
+    .addCase(updateBusinessVerification.pending, (state)=>{
+        state.isLoading=true;
+        state.isError=false;
+        state.isSuccess=false;
+        state.message="";
+    })
+    .addCase(updateBusinessVerification.fulfilled, (state, action)=>{
+        state.isLoading=false;
+        state.isSuccess=true;
+        state.message=action.payload.message;
+        state.user=action.payload.data;
+    })
+    .addCase(updateBusinessVerification.rejected, (state, action)=>{
+        state.isLoading=false;
+        state.isError=true;
+        state.message=action.payload.message;
+    });
 
 
 

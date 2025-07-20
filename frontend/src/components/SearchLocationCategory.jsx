@@ -87,13 +87,9 @@ const SearchLocationCategory = () => {
               }
           {cities.data &&
             cities.data.map((category) => (
-              <>
-             
-               <option key={category._id} value={category._id}>
+              <option key={category._id} value={category._id}>
                 {category.name}
               </option>
-              </>
-             
             ))}
         </select>
 

@@ -15,6 +15,9 @@ const SingleAuction = ({
   userImage,
   userName,
   userId,
+  bids,
+  winner,
+  lowestBidAmount,
 }) => {
   const [statusData, setStatusData] = useState(status);
 
@@ -24,6 +27,34 @@ const SingleAuction = ({
   });
 
   const logInUser = JSON.parse(localStorage.getItem("user"));
+
+  // Get current lowest bid amount
+  const getCurrentLowestBid = () => {
+    if (bids && bids.length > 0) {
+      const lowestBid = bids.reduce((lowest, bid) => {
+        return bid.bidAmount < lowest.bidAmount ? bid : lowest;
+      });
+      return lowestBid.bidAmount;
+    }
+    return budget; // Return budget if no bids
+  };
+
+  // Check if auction has a winner
+  const hasWinner = winner || (statusData === "over" && bids && bids.length > 0);
+
+  // Get winner information
+  const getWinnerInfo = () => {
+    if (winner?.bidder?.fullName) {
+      return {
+        name: winner.bidder.fullName,
+        amount: lowestBidAmount || winner.bidAmount,
+        profilePicture: winner.bidder.profilePicture
+      };
+    }
+    return null;
+  };
+
+  const winnerInfo = getWinnerInfo();
 
   return (
     <div className=" h-full justify-between bg-theme-bg rounded-lg flex flex-col p-3  text-white  ">
@@ -58,42 +89,50 @@ const SingleAuction = ({
             <h3 className="text-sm">{userName}</h3>
           </div>
         </div>
-        {/* show the winner of auction */}
-        {statusData === "over" ? (
-          <div className="flex justify-between item-center my-2 border-t border-border-info-color ">
-            {/* <div className="flex flex-col ">
-              <p className="text-[12px]">Current Bid</p>
-              <p className="mt-2">$ {startingPrice}</p>
-            </div> */}
-            <Link
-              to={`/single-auction-detail/${id}`}
-              className=" bg-theme-color hover:bg-color-danger text-white text-sm font-bold  rounded-md my-auto  py-2 w-full  text-center no-underline mt-3"
-            >
-              View
-            </Link>
-          </div>
-        ) : (
-          <div className="flex justify-between item-center my-2 border-t border-border-info-color py-1">
-            <div className="flex flex-col ">
-              <p className="text-[12px]">Current Bid</p>
-              <p className="mt-2">$ {budget}</p>
+        
+        {/* Show winner or current bid */}
+        {hasWinner ? (
+          <div className="flex justify-between item-center my-2 border-t border-border-info-color pt-3">
+            <div className="flex flex-col">
+              <p className="text-[12px] text-body-text-color">Winning Bid</p>
+              <p className="mt-2 text-theme-color font-bold">
+                ${lowestBidAmount || getCurrentLowestBid()}
+              </p>
+              {winnerInfo && (
+                <div className="flex items-center gap-2 mt-1">
+                  <img
+                    src={winnerInfo.profilePicture}
+                    alt="winner"
+                    className="w-4 h-4 rounded-full"
+                  />
+                  <span className="text-xs text-body-text-color">
+                    {winnerInfo.name}
+                  </span>
+                </div>
+              )}
             </div>
             <Link
               to={`/single-auction-detail/${id}`}
-              className={` flex items-center gap-1 text-white text-sm font-bold  rounded-md my-auto px-3 py-2  text-center no-underline
-            ${
-              userId === logInUser?._id
-                ? "bg-theme-bg2 text-body-text-color  border border-border-info-color "
-                : "bg-color-primary border cursor-pointer border-border-info-color hover:bg-color-danger transition-all"
-            }`}
+              className=" bg-theme-color hover:bg-color-danger text-white text-sm font-bold  rounded-md my-auto  py-2 px-4  text-center no-underline mt-3"
             >
-              {" "}
-              <BsCurrencyDollar
-                size={18}
-                strokeWidth={0.4}
-                className="mt-[-2px]"
-              />
-              <span>Place Bid</span>
+              View Details
+            </Link>
+          </div>
+        ) : (
+          <div className="flex justify-between item-center my-2 border-t border-border-info-color pt-3">
+            <div className="flex flex-col">
+              <p className="text-[12px] text-body-text-color">
+                {bids && bids.length > 0 ? "Current Lowest Bid" : "Starting Price"}
+              </p>
+              <p className="mt-2 text-theme-color font-bold">
+                ${getCurrentLowestBid()}
+              </p>
+            </div>
+            <Link
+              to={`/single-auction-detail/${id}`}
+              className=" bg-theme-color hover:bg-color-danger text-white text-sm font-bold  rounded-md my-auto  py-2 px-4  text-center no-underline mt-3"
+            >
+              View Details
             </Link>
           </div>
         )}

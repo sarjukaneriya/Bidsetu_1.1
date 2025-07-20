@@ -179,7 +179,8 @@ const getWinnerOfAuction = asyncHandler(async (req, res) => {
     "fullName email phone profilePicture"
   );
 
-  auction.winner = minBidId;
+  auction.winner = minBidId; // Set winner as bid ID
+  auction.lowestBidAmount = minAmount;
   auction.status = "over";
 
   await auction.save();

@@ -1,0 +1,221 @@
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { getBidsAuctionsByUser } from "../store/bid/bidSlice";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Loading from "./Loading";
+import { Link } from "react-router-dom";
+import { FaEye, FaTrophy, FaClock, FaCheckCircle, FaTimesCircle, FaChartLine } from "react-icons/fa";
+
+const MyBids = () => {
+  const dispatch = useDispatch();
+  const [bidData, setBidData] = useState([]);
+  const { user } = useSelector((state) => state.auth);
+  const { bids, isLoading, isError, isSuccess, message } = useSelector(
+    (state) => state.bid
+  );
+
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(getBidsAuctionsByUser());
+    }
+  }, [dispatch, user]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      setBidData(bids);
+    } else if (isError) {
+      toast.error(message);
+    }
+  }, [bids, isSuccess, isError, message]);
+
+  const getBidStatus = (bid, auction) => {
+    if (auction.winner && auction.winner._id === bid._id) {
+      return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1"><FaTrophy /> Won</span>;
+    } else if (auction.status === "completed" && auction.winner && auction.winner._id !== bid._id) {
+      return <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs flex items-center gap-1"><FaTimesCircle /> Lost</span>;
+    } else if (new Date(auction.endTime) < new Date()) {
+      return <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center gap-1"><FaClock /> Expired</span>;
+    } else {
+      return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1"><FaClock /> Active</span>;
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const calculateStats = () => {
+    if (!bidData || bidData.length === 0) return { total: 0, won: 0, lost: 0, active: 0, winRate: 0 };
+    
+    const total = bidData.length;
+    const won = bidData.filter(bid => bid.auction?.winner?._id === bid._id).length;
+    const lost = bidData.filter(bid => 
+      bid.auction?.status === "completed" && 
+      bid.auction?.winner?._id !== bid._id
+    ).length;
+    const active = bidData.filter(bid => 
+      new Date(bid.auction?.endTime) > new Date() && 
+      bid.auction?.status !== "completed"
+    ).length;
+    
+    const winRate = total > 0 ? Math.round((won / total) * 100) : 0;
+    
+    return { total, won, lost, active, winRate };
+  };
+
+  const stats = calculateStats();
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  return (
+    <div className="w-full">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">My Bids</h2>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <FaChartLine className="text-blue-600" />
+            <span>Performance Analytics</span>
+          </div>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-blue-600 font-medium">Total Bids</p>
+                <p className="text-2xl font-bold text-blue-800">{stats.total}</p>
+              </div>
+              <FaChartLine className="text-blue-600" size={20} />
+            </div>
+          </div>
+          
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-green-600 font-medium">Won</p>
+                <p className="text-2xl font-bold text-green-800">{stats.won}</p>
+              </div>
+              <FaTrophy className="text-green-600" size={20} />
+            </div>
+          </div>
+          
+          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-red-600 font-medium">Lost</p>
+                <p className="text-2xl font-bold text-red-800">{stats.lost}</p>
+              </div>
+              <FaTimesCircle className="text-red-600" size={20} />
+            </div>
+          </div>
+          
+          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-orange-600 font-medium">Win Rate</p>
+                <p className="text-2xl font-bold text-orange-800">{stats.winRate}%</p>
+              </div>
+              <FaCheckCircle className="text-orange-600" size={20} />
+            </div>
+          </div>
+        </div>
+
+        {bidData && bidData.length > 0 ? (
+          <div className="grid gap-4">
+            {bidData.map((bid) => (
+              <div key={bid._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4 flex-1">
+                    <img
+                      src={bid.auction?.image}
+                      alt={bid.auction?.name}
+                      className="w-20 h-20 object-cover rounded-lg"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                        {bid.auction?.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                        {bid.auction?.description}
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span>Your Bid: <strong className="text-blue-600">${bid.bidAmount}</strong></span>
+                        <span>Budget: ${bid.auction?.budget}</span>
+                        <span>Quantity: {bid.auction?.quantity}</span>
+                      </div>
+                      <div className="flex items-center gap-4 mt-2">
+                        <span className="text-sm text-gray-500">
+                          Bid Placed: {formatDate(bid.bidTime)}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          Auction Ends: {formatDate(bid.auction?.endTime)}
+                        </span>
+                        {getBidStatus(bid, bid.auction)}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/single-auction-detail/${bid.auction?._id}`}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="View Auction Details"
+                    >
+                      <FaEye size={16} />
+                    </Link>
+                  </div>
+                </div>
+                
+                {bid.auction?.winner && bid.auction.winner._id === bid._id && (
+                  <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <h4 className="font-semibold text-green-800 mb-2">🎉 Congratulations! You Won!</h4>
+                    <p className="text-sm text-green-600">
+                      Your bid of ${bid.bidAmount} was selected as the winning bid for this auction.
+                    </p>
+                  </div>
+                )}
+                
+                {bid.auction?.winner && bid.auction.winner._id !== bid._id && bid.auction.status === "completed" && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <h4 className="font-semibold text-red-800 mb-2">Better luck next time!</h4>
+                    <p className="text-sm text-red-600">
+                      Your bid of ${bid.bidAmount} was not selected. The winning bid was ${bid.auction.winner.bidAmount}.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <FaChartLine size={48} className="mx-auto" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-600 mb-2">No bids yet</h3>
+            <p className="text-gray-500 mb-4">
+              Start bidding on auctions to find opportunities and grow your business.
+            </p>
+            <Link
+              to="/dashboard"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
+            >
+              <FaEye /> Browse Auctions
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MyBids; 

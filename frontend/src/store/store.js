@@ -1,4 +1,3 @@
-
 import { configureStore} from '@reduxjs/toolkit';
 import authReducer from './auth/authSlice';
 import auctionReducer from './auction/auctionSlice';
@@ -8,6 +7,8 @@ import bidReducer from './bid/bidSlice';
 import notificationReducer from './notification/notificationSlice';
 import cartReducer from "./cart/cartSlice"
 import userReducer from "./user/userSlice"
+import deliveryReducer from "./delivery/deliverySlice"
+import aiReducer from "./ai/aiSlice"
 
 export const store= configureStore({
     reducer: {
@@ -20,6 +21,8 @@ export const store= configureStore({
         notification: notificationReducer,
         cart: cartReducer,
         user:userReducer,
+        delivery: deliveryReducer,
+        ai: aiReducer,
 
 
         

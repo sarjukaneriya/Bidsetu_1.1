@@ -6,10 +6,14 @@ import ManageItems from "../components/ManageItems";
 import BidsItem from "../components/BidsItem";
 import Notifications from "../components/Notifications";
 import AccountSetting from "../components/AccountSetting";
-import {SellerRoutes} from '../auth/Protected'
+import {SellerRoutes, BuyerRoutes} from '../auth/Protected'
 import PaymentMethod from "../components/PaymentMethod";
 import Cart from "../components/Cart";
 import ErrorPage from "./ErrorPage";
+import MyAuctions from "../components/MyAuctions";
+import MyBids from "../components/MyBids";
+import BidHistory from "../components/BidHistory";
+import BusinessVerification from "../components/BusinessVerification";
 
 
 
@@ -35,10 +39,19 @@ const UserProfile = () => {
         <Routes>
           <Route path="/profile" element={<ProfileComponent />} />
 
-          <Route element={<SellerRoutes />}>
-            <Route path="/manage-items" element={<ManageItems />} />
-
+          {/* Buyer-only Routes */}
+          <Route element={<BuyerRoutes />}>
+            <Route path="/my-auctions" element={<MyAuctions />} />
           </Route>
+
+          {/* Supplier-only Routes */}
+          <Route element={<SellerRoutes />}>
+            <Route path="/my-bids" element={<MyBids />} />
+            <Route path="/bid-history" element={<BidHistory />} />
+            <Route path="/business-verification" element={<BusinessVerification />} />
+          </Route>
+
+          {/* Common Routes */}
           <Route path="/bids-items" element={<BidsItem />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/account-settings" element={<AccountSetting />} />
@@ -48,8 +61,6 @@ const UserProfile = () => {
 
           <Route path="/logout" element={<ChangePassword />} />
           <Route path="*" element={<ErrorPage />} />
-
-
         </Routes>
       </div>
     </div>

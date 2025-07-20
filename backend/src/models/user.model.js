@@ -22,7 +22,47 @@ const userSchema = new mongoose.Schema({
   gender: { type: String },
   description: { type: String },
   paymentVerified: { type: Boolean, default: false },
+  
+  // Business Verification for Suppliers
+  businessVerified: { type: Boolean, default: false },
+  businessDetails: {
+    businessName: { type: String },
+    businessType: { type: String },
+    gstNumber: { type: String },
+    panNumber: { type: String },
+    businessAddress: { type: String },
+    city: { type: String },
+    state: { type: String },
+    pincode: { type: String },
+    phoneNumber: { type: String },
+    email: { type: String },
+    website: { type: String },
+    businessDescription: { type: String },
+    yearsInBusiness: { type: Number },
+    annualTurnover: { type: String },
+    employeeCount: { type: Number },
+    certifications: { type: String },
+    bankName: { type: String },
+    accountNumber: { type: String },
+    ifscCode: { type: String },
+    accountHolderName: { type: String },
+    verificationDate: { type: Date },
+    verificationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }
+  },
 
+  // 🏆 Supplier Performance Metrics for AI Ranking
+  supplierMetrics: {
+    onTimeDeliveries: { type: Number, default: 0 }, // Count of on-time deliveries
+    totalDeliveries: { type: Number, default: 0 }, // Total number of deliveries
+    onTimeDeliveryRate: { type: Number, default: 0 }, // Percentage (0-100)
+    reliabilityScore: { type: Number, default: 0 }, // Overall score (0-100)
+    averageDeliveryTime: { type: Number, default: 0 }, // Average days to deliver
+    totalEarnings: { type: Number, default: 0 }, // Total earnings from successful deliveries
+    rating: { type: Number, default: 0 }, // Average rating from buyers
+    totalReviews: { type: Number, default: 0 }, // Total number of reviews
+    lastDeliveryDate: { type: Date }, // Date of last delivery
+    isActiveSupplier: { type: Boolean, default: false }, // Whether supplier is currently active
+  },
   
   products: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
   bids: [{ type: mongoose.Schema.Types.ObjectId, ref: "Bid" }],

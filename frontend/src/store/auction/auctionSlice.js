@@ -82,6 +82,19 @@ export const getSellerAuction = createAsyncThunk(
   }
 );
 
+export const getAuctionsByUser = createAsyncThunk(
+  "auction/getAuctionsByUser",
+  async (userId, thunkAPI) => {
+    try {
+      return await auctionService.getSellerAuction();
+    } catch (error) {
+      const message =
+        (error.response && error.response.data.message) || error.message;
+      return thunkAPI.rejectWithValue({ message, isError: true });
+    }
+  }
+);
+
 export const deleteSingleAuctionById = createAsyncThunk(
   "auction/deleteSingleAuctionById",
   async (id, thunkAPI) => {
@@ -304,6 +317,25 @@ const auctionSlice = createSlice({
       state.sellerAuction = action.payload.data;
     });
     builder.addCase(getSellerAuction.rejected, (state, action) => {
+      state.isLoading = false;
+      state.isError = true;
+      state.isSuccess = false;
+      state.message = action.payload.message;
+    });
+    builder.addCase(getAuctionsByUser.pending, (state) => {
+      state.isLoading = true;
+      state.isError = false;
+      state.isSuccess = false;
+      state.message = "";
+    });
+    builder.addCase(getAuctionsByUser.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.isError = false;
+      state.isSuccess = true;
+      state.message = action.payload.message;
+      state.auction = action.payload.data;
+    });
+    builder.addCase(getAuctionsByUser.rejected, (state, action) => {
       state.isLoading = false;
       state.isError = true;
       state.isSuccess = false;

@@ -27,52 +27,54 @@ async function selectAuctionWinner(auctionId) {
   return
  }
 
-  let maxBidId = bids[0]._id;
-  let maxAmount = bids[0].bidAmount;
+  // Find the lowest bid (since this is a reverse auction)
+  let minBidId = bids[0]._id;
+  let minAmount = bids[0].bidAmount;
   for (let i = 1; i < bids.length; i++) {
-    if (bids[i].bidAmount > maxAmount) {
-      maxAmount = bids[i].bidAmount;
-      maxBidId = bids[i]._id;
+    if (bids[i].bidAmount < minAmount) {
+      minAmount = bids[i].bidAmount;
+      minBidId = bids[i]._id;
     }
   }
 
   const auction = await Auction.findById(auctionId);
-  const winnerUser = await Bid.findById(maxBidId).populate(
+  const winnerBid = await Bid.findById(minBidId).populate(
     "bidder",
     "_id fullName email phone profilePicture"
   );
 
-  console.log(winnerUser, "winnerUser");
+  console.log(winnerBid, "winnerBid");
 
-  auction.winner = maxBidId;
+  auction.winner = minBidId; // Set winner as bid ID
+  auction.lowestBidAmount = minAmount;
   auction.status = "over";
 
   await auction.save();
 
-  await sendNotification(winnerUser,auction )
+  await sendNotification(winnerBid, auction)
   
 
 //first find the  user in cart then add item to that cart
-  const userCart=await Cart.findOne({user:winnerUser.bidder._id});
+  const userCart=await Cart.findOne({user:winnerBid.bidder._id});
   if(!userCart){
-      await Cart.create({products:[auction._id],user:winnerUser.bidder._id});
+      await Cart.create({products:[auction._id],user:winnerBid.bidder._id});
   }else{
       userCart.products.push(auction._id);
       await userCart.save();
   }
 
-  console.log(cartItem);
+  console.log("Cart updated for winner");
   
   
 
 }
 
-async function sendNotification(winner, auction){
+async function sendNotification(winnerBid, auction){
   console.log("sending notificaton to userin cornjosb,,,,,,,,,,,,");
 
   //find auciton
   
-  if (!auction || !winner) {
+  if (!auction || !winnerBid) {
     return 
   }
   const type="AUCTION_ENDED"
@@ -81,7 +83,7 @@ async function sendNotification(winner, auction){
   if (type === "AUCTION_ENDED") {
     var notification = {
       user: null,
-      message: `${winner?.bidder?.fullName} Won the  ${auction?.name}`,
+      message: `${winnerBid?.bidder?.fullName} Won the  ${auction?.name}`,
       type: "AUCTION_ENDED",
       auction: auction?._id,
       link: `/single-auction-detail/${auction?._id}`,
@@ -95,12 +97,12 @@ async function sendNotification(winner, auction){
     const userIds = new Set(bids.map((bid) => bid?.bidder?.toString()));
 
     // Add the owner of the item to the user IDs
-    userIds.add(auction.seller.toString());
+    userIds.add(auction.user.toString());
 
     // Create a notification for each user ID
     userIds.forEach(async (id) => {
       notification.message = `${
-        id === winner?.bidder?._id?.toString() ? "you" : winner?.bidder?.fullName
+        id === winnerBid?.bidder?._id?.toString() ? "you" : winnerBid?.bidder?.fullName
       } Won the ${auction?.name}`;
 
       await new Notification({ ...notification, user: id }).save();

@@ -12,6 +12,7 @@ const Register = () => {
     fullName: "",
     email: "",
     password: "",
+    userType: "user", // Add user type selection
   });
 
   const navigate = useNavigate();
@@ -113,6 +114,19 @@ const Register = () => {
             }
             required
           />
+          <label className="my-1 text-lg">Account Type</label>
+          <select
+            value={formData.userType}
+            onChange={(e) =>
+              setFormData({ ...formData, userType: e.target.value })
+            }
+            className="w-full pl-5 py-3 rounded text-white bg-[#0E294D] placeholder-body-text-color outline-none mb-3 border border-border-info-color focus:border-theme-color"
+            required
+          >
+            <option value="user">👤 Buyer (Post Needs)</option>
+            <option value="seller">🏪 Supplier (Place Bids)</option>
+          </select>
+
           <label className="my-1 text-lg">Password</label>
           <div className=" pr-3 overflow-hidden flex justify-between items-center w-full rounded bg-[#0E294D] outline-none mb-4 border border-border-info-color ">
             <input

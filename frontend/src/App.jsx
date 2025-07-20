@@ -16,15 +16,12 @@ import SingleAuctionDetail from "./pages/SingleAuctionDetail";
 import UserProfile from "./pages/UserProfile";
 import EditAuction from "./pages/EditAuction";
 import ErrorPage from "./pages/ErrorPage";
-import Protected, { PublicRoute, SellerRoutes, AdminRoutes } from "./auth/Protected";
+import Protected, { PublicRoute, BuyerRoutes, AdminRoutes } from "./auth/Protected";
 import PaymentSuccess from "./pages/PaymentSuccess";
-import Admin from "./admin/Admin"
 import { useSelector } from "react-redux";
 import AdminFooter from "./admin/components/Footer"
 import AdminHeader from "./admin/components/Header"
-import AdminLogin from "./admin/pages/Login"
 import AdminDashboard from "./admin/Admin"
-import ManageItems from "./components/ManageItems";
 
 
 const App = () => {
@@ -38,7 +35,6 @@ console.log(user,"...")
       {user && user.userType === "admin" ? <AdminHeader /> : <Header />}
  
         <Routes>
-          {/* <Route path="/admin/login" element={<AdminLogin />} /> */}
           <Route path="/" element={<Home />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/contact-us" element={<ContactUs />} />
@@ -65,19 +61,17 @@ console.log(user,"...")
             <Route path="/user-profile/*" element={<UserProfile />} />
             <Route path="/edit-auction/:id" element={<EditAuction />} />
             <Route path="/success/:id" element={<PaymentSuccess />} />
-            <Route path="/create-auction" element={<UploadItem />} />
-            <Route element={<userRoutes />}>
+            
+            {/* Buyer-only Routes */}
+            <Route element={<BuyerRoutes />}>
               <Route path="/create-auction" element={<UploadItem />} />
-              {/* <Route path="/user-profile/manage-items" element={<ManageItems />} /> */}
-
-
             </Route>
-           
           </Route>
-          {/* <Route element={<AdminRoutes />}> */}
-              <Route path="/admin/*" element={<AdminDashboard />} />
-              
-            {/* </Route> */}
+          
+          {/* Admin Routes */}
+          <Route element={<AdminRoutes />}>
+            <Route path="/admin/*" element={<AdminDashboard />} />
+          </Route>
         </Routes>
 
 {user && user.userType === "admin" ? <AdminFooter />: <Footer /> }

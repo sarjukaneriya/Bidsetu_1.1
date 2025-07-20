@@ -70,6 +70,20 @@ const AdminProtected = () => {
   return auth ? <Outlet /> : null;
 };
 
+const BuyerRoutes=()=>{
+  const {user}=useSelector((state)=>state.auth);
+  const auth = useAuth();
+  const navigate = useNavigate();
+//console.log(auth, "auth.,,,,,buyer routes,,,...........");
+  useEffect(() => {
+    if (auth && user.userType !== "user") {
+      navigate("/dashboard");
+    }
+  }, [auth, navigate]);
+
+  return auth && user.userType === "user" ? <Outlet /> : null;
+}
+
 const SellerRoutes=()=>{
 const {user}=useSelector((state)=>state.auth);
   const auth = useAuth();
@@ -101,5 +115,5 @@ const AdminRoutes=()=>{
     return auth && user.userType === "admin" ? <Outlet /> : null;
   }
 
-export { PublicRoute,SellerRoutes, AdminRoutes,AdminProtected , AdminPublicRoute};
+export { PublicRoute,SellerRoutes, BuyerRoutes, AdminRoutes,AdminProtected , AdminPublicRoute};
 export default Protected;

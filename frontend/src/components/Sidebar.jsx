@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { FaUser, FaCirclePlus } from "react-icons/fa6";
 import { IoIosNotifications, IoMdSettings, IoIosListBox } from "react-icons/io";
-import { FaEdit, FaListAlt } from "react-icons/fa";
+import { FaEdit, FaListAlt, FaBuilding } from "react-icons/fa";
 import { RiLockPasswordFill } from "react-icons/ri";
 import { IoLogOutSharp, IoWalletOutline } from "react-icons/io5";
 
@@ -57,29 +57,8 @@ const Sidebar = () => {
             </Link>
           </li>
 
-          {user?.userType == "user" && (
+          {user?.userType === "user" && (
             <>
-              <li>
-                <Link
-                  className={`flex items-center gap-2 py-2 px-4 rounded-lg cursor-pointer hover:pl-[20px] hover:text-theme-color hover:bg-theme transition-all duration-500 ${
-                    activeLink === "/user-profile/manage-items"
-                      ? "bg-theme-color hover:text-white"
-                      : ""
-                  }`}
-                  to="/user-profile/manage-items"
-                  onClick={() => handleLinkClick("/user-profile/manage-items")}
-                >
-                  <FaEdit
-                    size={16}
-                    className={`text-theme-color transition-all duration-500 ${
-                      activeLink === "/user-profile/manage-items"
-                        ? " text-white"
-                        : ""
-                    }`}
-                  />
-                  Manage Items
-                </Link>
-              </li>
               <li>
                 <Link
                   className="flex items-center gap-2  py-2 px-4 rounded-lg cursor-pointer hover:pl-[20px] hover:text-theme-color hover:bg-theme transition-all duration-500"
@@ -87,6 +66,95 @@ const Sidebar = () => {
                 >
                   <FaCirclePlus size={16} className="text-theme-color" />
                   Create Auction
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={`flex items-center gap-2 py-2 px-4 rounded-lg cursor-pointer hover:pl-[20px] hover:text-theme-color hover:bg-theme transition-all duration-500 ${
+                    activeLink === "/user-profile/my-auctions"
+                      ? "bg-theme-color hover:text-white"
+                      : ""
+                  }`}
+                  to="/user-profile/my-auctions"
+                  onClick={() => handleLinkClick("/user-profile/my-auctions")}
+                >
+                  <FaEdit
+                    size={16}
+                    className={`text-theme-color transition-all duration-500 ${
+                      activeLink === "/user-profile/my-auctions"
+                        ? " text-white"
+                        : ""
+                    }`}
+                  />
+                  My Auctions
+                </Link>
+              </li>
+            </>
+          )}
+
+          {user?.userType === "seller" && (
+            <>
+              <li>
+                <Link
+                  className={`flex items-center gap-2 py-2 px-4 rounded-lg cursor-pointer hover:pl-[20px] hover:text-theme-color hover:bg-theme transition-all duration-500 ${
+                    activeLink === "/user-profile/my-bids"
+                      ? "bg-theme-color hover:text-white"
+                      : ""
+                  }`}
+                  to="/user-profile/my-bids"
+                  onClick={() => handleLinkClick("/user-profile/my-bids")}
+                >
+                  <FaListAlt
+                    size={16}
+                    className={`text-theme-color transition-all duration-500 ${
+                      activeLink === "/user-profile/my-bids"
+                        ? " text-white"
+                        : ""
+                    }`}
+                  />
+                  My Bids
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={`flex items-center gap-2 py-2 px-4 rounded-lg cursor-pointer hover:pl-[20px] hover:text-theme-color hover:bg-theme transition-all duration-500 ${
+                    activeLink === "/user-profile/bid-history"
+                      ? "bg-theme-color hover:text-white"
+                      : ""
+                  }`}
+                  to="/user-profile/bid-history"
+                  onClick={() => handleLinkClick("/user-profile/bid-history")}
+                >
+                  <FaListAlt
+                    size={16}
+                    className={`text-theme-color transition-all duration-500 ${
+                      activeLink === "/user-profile/bid-history"
+                        ? " text-white"
+                        : ""
+                    }`}
+                  />
+                  Bid History
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={`flex items-center gap-2 py-2 px-4 rounded-lg cursor-pointer hover:pl-[20px] hover:text-theme-color hover:bg-theme transition-all duration-500 ${
+                    activeLink === "/user-profile/business-verification"
+                      ? "bg-theme-color hover:text-white"
+                      : ""
+                  }`}
+                  to="/user-profile/business-verification"
+                  onClick={() => handleLinkClick("/user-profile/business-verification")}
+                >
+                  <FaBuilding
+                    size={16}
+                    className={`text-theme-color transition-all duration-500 ${
+                      activeLink === "/user-profile/business-verification"
+                        ? " text-white"
+                        : ""
+                    }`}
+                  />
+                  Business Verification
                 </Link>
               </li>
             </>

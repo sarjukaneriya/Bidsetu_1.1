@@ -14,6 +14,9 @@ import {
   deleteUserById,
   getTopSellers,
   getTopCities,
+  submitBusinessVerification,
+  getBusinessVerification,
+  updateBusinessVerification,
 } from "../controllers/user.controller.js";
 import { verifyAdmin, verifyUser } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -41,6 +44,12 @@ router
   router.route("/top-cities").get(verifyUser, verifyAdmin, getTopCities);
 
 router.route("/top-sellers").get(verifyUser, verifyAdmin,getTopSellers);
+
+// Business Verification Routes
+router.route("/business-verification").post(verifyUser, submitBusinessVerification);
+router.route("/business-verification").get(verifyUser, getBusinessVerification);
+router.route("/business-verification").put(verifyUser, updateBusinessVerification);
+
 router.route("/:id").delete(verifyUser,verifyAdmin, deleteUserById);
 router.route("/update-user/:id")
   .put(verifyUser, verifyAdmin, upload.single("profilePicture"), updateUserById);

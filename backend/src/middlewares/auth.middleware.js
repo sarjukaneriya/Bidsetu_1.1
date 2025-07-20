@@ -7,10 +7,15 @@ import  User  from "../models/user.model.js";
 
 export const verifyUser = asyncHandler(async (req, res, next) => {
   try {
-    const token = req.cookies?.JwtToken ||  req.headers.authorization?.split(" ")[1];
+    const token = req.cookies?.JwtToken || req.headers.authorization?.split(" ")[1];
 
     if (!token) {
       return res.status(401).json(new ApiResponse(401, "Unauthorized request"));
+    }
+
+    // Only validate token format if token exists
+    if (token && (typeof token !== 'string' || token.length < 10 || !token.includes('.'))) {
+      return res.status(401).json(new ApiResponse(401, "Invalid token format"));
     }
 
     const decodedToken = await jwt.verify(token, process.env.JWT_SECRET);
@@ -28,18 +33,34 @@ export const verifyUser = asyncHandler(async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json(new ApiResponse(401, error?.message || "Unauthorized request"));
+    console.error("JWT Verification Error:", error.message);
+    return res.status(401).json(new ApiResponse(401, "Invalid or expired token"));
   }
 });
 
 export const verifySeller = asyncHandler(async (req, res, next) => {
   try {
     const user = req.user;
-console.log(user, "user seller");
+    console.log(user, "user seller");
    // console.log(user);
 
-    if (user.userType == "seller") {
-     return res.status(403).json(new ApiResponse(403, "Access denied"));
+    if (user.userType !== "seller") {
+     return res.status(403).json(new ApiResponse(403, "Only suppliers can access this resource"));
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).json(new ApiResponse(401, error?.message || "Unauthorized request"));
+  }
+});
+
+export const verifyBuyer = asyncHandler(async (req, res, next) => {
+  try {
+    const user = req.user;
+    console.log(user, "user buyer");
+
+    if (user.userType !== "user") {
+     return res.status(403).json(new ApiResponse(403, "Only buyers can access this resource"));
     }
 
     next();

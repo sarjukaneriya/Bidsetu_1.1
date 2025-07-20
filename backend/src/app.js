@@ -24,7 +24,8 @@ import cityRouter from "./routes/city.routes.js";
 import bidRouter from "./routes/bid.routes.js";
 import notificationRouter from "./routes/notification.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
-import cartRouter from "./routes/cart.routes.js"
+import cartRouter from "./routes/cart.routes.js";
+import aiRouter from "./routes/ai.routes.js";
 
 
 
@@ -37,7 +38,8 @@ app.use("/api/v1/cities",cityRouter);
 app.use("/api/v1/bids",bidRouter);
 app.use("/api/v1/notifications",notificationRouter);
 app.use("/api/v1/payments",paymentRouter);
-app.use("/api/v1/cart", cartRouter)
+app.use("/api/v1/cart", cartRouter);
+app.use("/api/v1/ai", aiRouter);
 
 
 

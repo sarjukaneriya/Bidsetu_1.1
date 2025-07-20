@@ -1,6 +1,11 @@
 import ApiResponse  from "../utils/ApiResponse.js";
 import Auction from "../models/auction.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import mongoose from "mongoose";
+import City from "../models/city.model.js";
+import Bid from "../models/bid.model.js";
+import User from "../models/user.model.js";
 
 // @desc Create a Need (Auction) by Buyer
 // @route POST /api/v1/auctions
@@ -21,13 +26,18 @@ const createAuction = asyncHandler(async (req, res) => {
     } = req.body;
     const image = req.file?.path;
 
-    console.log(name, "name");
-    console.log(description, "description");
-    console.log(category, "category");
-    console.log(quantity, "quantity");
-    console.log(budget, "budget");
-    console.log(startTime, "startTime");
-    console.log(endTime, "endTime");
+    console.log("=== Form Data Debug ===");
+    console.log("req.body:", req.body);
+    console.log("req.file:", req.file);
+    console.log("name:", name);
+    console.log("description:", description);
+    console.log("category:", category);
+    console.log("quantity:", quantity);
+    console.log("budget:", budget);
+    console.log("startTime:", startTime);
+    console.log("endTime:", endTime);
+    console.log("location:", location);
+    console.log("=======================");
 
     // 🛑 Check if logged-in user is Buyer
     if (req.user.userType !== "user") {
@@ -191,6 +201,13 @@ const createAuction = asyncHandler(async (req, res) => {
 // @access Public
 const getSingleAuctionById = asyncHandler(async (req, res) => {
   try {
+    // Validate auction ID format
+    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json(new ApiResponse(400, "Invalid auction ID format"));
+    }
+
+    console.log("Fetching auction with ID:", req.params.id);
+
     const auction = await Auction.findById(req.params.id)
       .populate("category", "name")
       .populate("location", "name")
@@ -206,7 +223,7 @@ const getSingleAuctionById = asyncHandler(async (req, res) => {
         path: "winner",
         populate: {
           path: "bidder",
-          select: "fullName profilePicture",
+          select: "fullName email phone profilePicture",
         },
       });
 
@@ -214,11 +231,13 @@ const getSingleAuctionById = asyncHandler(async (req, res) => {
       return res.status(404).json(new ApiResponse(404, "Auction not found"));
     }
 
+    console.log("Auction found:", auction._id);
+
     return res.json(
       new ApiResponse(200, "Auction retrieved successfully", auction)
     );
   } catch (error) {
-    console.error(error);
+    console.error("Error in getSingleAuctionById:", error);
     return res
       .status(500)
       .json(new ApiResponse(500, error?.message || "Internal server error"));
@@ -260,7 +279,7 @@ const getAllAuctions = asyncHandler(async (req, res) => {
         path: "winner",
         populate: {
           path: "bidder",
-          select: "fullName  profilePicture",
+          select: "fullName profilePicture",
         },
       })
       .populate("category", "name")
@@ -284,8 +303,6 @@ const getAllAuctions = asyncHandler(async (req, res) => {
 // @desc Update auction status
 // @route POST /api/v1/auctions/:id/status
 // @access public
-import { asyncHandler } from "../utils/asyncHandler.js";
-
 const updateAuctionStatus = asyncHandler(async (req, res) => {
   try {
     const auction = await Auction.findById(req.params.id);
@@ -366,7 +383,7 @@ const getAuctionsByUser = asyncHandler(async (req, res) => {
       path: "winner",
       populate: {
         path: "bidder",
-        select: "fullName",
+        select: "fullName email phone profilePicture",
       }})
       .sort({createdAt:-1})
 
@@ -520,31 +537,34 @@ const getAuctionWinner= asyncHandler(async (req, res) => {
   
   try {
     const auction = await Auction.findById(req.params.id)
-    .populate(
-      {
-        path: "winner",
-  
-        populate: {
-          path: "bidder",
-          select: "fullName  profilePicture",
-        },
-      }
-    )
+    .populate({
+      path: "winner",
+      populate: {
+        path: "bidder",
+        select: "fullName email phone profilePicture",
+      },
+    })
       
     if (!auction) {
       return res.status(404).json(new ApiResponse(404, "Auction not found"));
     }
-    if (auction.bids.length === 0) {
-      return res.status(404).json(new ApiResponse(404, "No bids found"));
-    }
-    const winner={
-      winnerFullName:auction?.winner?.bidder?.fullName,
-      winnerProfilePicture:auction?.winner?.bidder?.profilePicture,
-      winnerBidAmount:auction?.winner?.bidAmount,
-      winnerBidTime:auction?.winner?.bidTime
+    
+    if (!auction.winner) {
+      return res.status(404).json(new ApiResponse(404, "No winner selected yet"));
     }
 
-return res.status(200).json(new ApiResponse(200, "Auction winner retrieved successfully", {winner:winner}));
+    const winner = {
+      winnerFullName: auction?.winner?.bidder?.fullName,
+      winnerProfilePicture: auction?.winner?.bidder?.profilePicture,
+      winnerBidAmount: auction?.winner?.bidAmount,
+      winnerBidTime: auction?.winner?.bidTime,
+      winnerEmail: auction?.winner?.bidder?.email,
+      winnerPhone: auction?.winner?.bidder?.phone,
+      bidId: auction?.winner?._id,
+      bidderId: auction?.winner?.bidder?._id
+    }
+
+    return res.status(200).json(new ApiResponse(200, "Auction winner retrieved successfully", {winner: winner}));
     
   } catch (error) {
     return res
@@ -566,10 +586,9 @@ const getLiveAuctions = asyncHandler(async (req, res) => {
       .populate("user", "fullName email phone location profilePicture")
       .populate({
         path: "winner",
-
         populate: {
           path: "bidder",
-          select: "fullName  profilePicture",
+          select: "fullName email phone profilePicture",
         },
       });
 
@@ -599,10 +618,9 @@ const getUpcomingAuctions = asyncHandler(async (req, res) => {
       .populate("user", "fullName email phone location profilePicture")
       .populate({
         path: "winner",
-
         populate: {
           path: "bidder",
-          select: "fullName  profilePicture",
+          select: "fullName email phone profilePicture",
         },
       });
 
@@ -657,9 +675,15 @@ const finalizeAuctionWinner = asyncHandler(async (req, res) => {
 
     await auction.save();
 
+    // Populate winner with bidder info for response
+    const winnerBid = await Bid.findById(minBid._id).populate(
+      "bidder",
+      "fullName email phone profilePicture"
+    );
+
     return res.status(200).json(
       new ApiResponse(200, "Auction finalized successfully", {
-        winnerBid: minBid,
+        winnerBid: winnerBid,
       })
     );
   } catch (error) {
@@ -692,7 +716,151 @@ const updatePaymentStatus = asyncHandler(async (req, res) => {
   }
 })
 
+// @desc Update delivery status and confirm delivery
+// @route PUT /api/v1/auctions/:id/delivery-status
+// @access Private
+const updateDeliveryStatus = asyncHandler(async (req, res) => {
+  try {
+    const { deliveryStatus, actualDeliveryDate, deliveryNotes } = req.body;
+    const auction = await Auction.findById(req.params.id);
 
+    if (!auction) {
+      return res.status(404).json(new ApiResponse(404, "Auction not found"));
+    }
+
+    // Only buyer can update delivery status
+    if (auction.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json(new ApiResponse(403, "Only buyer can update delivery status"));
+    }
+
+    // Update delivery fields
+    if (deliveryStatus) auction.deliveryStatus = deliveryStatus;
+    if (actualDeliveryDate) auction.actualDeliveryDate = actualDeliveryDate;
+    if (deliveryNotes) auction.deliveryNotes = deliveryNotes;
+
+    // If delivery is confirmed, update metrics
+    if (deliveryStatus === 'delivered' && auction.winner) {
+      auction.deliveryConfirmed = true;
+      auction.deliveryConfirmedAt = new Date();
+      
+      // Calculate if delivery was on time
+      const isOnTime = auction.expectedDeliveryDate && 
+                      auction.actualDeliveryDate && 
+                      new Date(auction.actualDeliveryDate) <= new Date(auction.expectedDeliveryDate);
+
+      // Update supplier metrics
+      await updateSupplierMetrics(auction.winner, isOnTime, auction.lowestBidAmount);
+    }
+
+    await auction.save();
+
+    return res.status(200).json(
+      new ApiResponse(200, "Delivery status updated successfully", auction)
+    );
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json(new ApiResponse(500, error?.message || "Internal server error"));
+  }
+});
+
+// @desc Set expected delivery date (called by supplier when they win)
+// @route PUT /api/v1/auctions/:id/expected-delivery
+// @access Private
+const setExpectedDeliveryDate = asyncHandler(async (req, res) => {
+  try {
+    const { expectedDeliveryDate } = req.body;
+    const auction = await Auction.findById(req.params.id);
+
+    if (!auction) {
+      return res.status(404).json(new ApiResponse(404, "Auction not found"));
+    }
+
+    // Only winner can set expected delivery date
+    if (auction.winner.toString() !== req.user._id.toString()) {
+      return res.status(403).json(new ApiResponse(403, "Only winner can set expected delivery date"));
+    }
+
+    if (!expectedDeliveryDate) {
+      return res.status(400).json(new ApiResponse(400, "Expected delivery date is required"));
+    }
+
+    auction.expectedDeliveryDate = expectedDeliveryDate;
+    auction.deliveryStatus = 'pending';
+    await auction.save();
+
+    return res.status(200).json(
+      new ApiResponse(200, "Expected delivery date set successfully", auction)
+    );
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json(new ApiResponse(500, error?.message || "Internal server error"));
+  }
+});
+
+// @desc Get supplier performance metrics
+// @route GET /api/v1/auctions/supplier-metrics/:supplierId
+// @access Public
+const getSupplierMetrics = asyncHandler(async (req, res) => {
+  try {
+    const supplier = await User.findById(req.params.supplierId)
+      .select('fullName supplierMetrics');
+
+    if (!supplier) {
+      return res.status(404).json(new ApiResponse(404, "Supplier not found"));
+    }
+
+    return res.status(200).json(
+      new ApiResponse(200, "Supplier metrics retrieved successfully", supplier)
+    );
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json(new ApiResponse(500, error?.message || "Internal server error"));
+  }
+});
+
+// Helper function to update supplier metrics
+const updateSupplierMetrics = async (supplierId, isOnTime, bidAmount) => {
+  try {
+    const supplier = await User.findById(supplierId);
+    if (!supplier) return;
+
+    const metrics = supplier.supplierMetrics;
+    
+    // Update delivery counts
+    metrics.totalDeliveries += 1;
+    if (isOnTime) {
+      metrics.onTimeDeliveries += 1;
+    }
+    
+    // Calculate on-time delivery rate
+    metrics.onTimeDeliveryRate = (metrics.onTimeDeliveries / metrics.totalDeliveries) * 100;
+    
+    // Update earnings
+    metrics.totalEarnings += bidAmount || 0;
+    
+    // Update last delivery date
+    metrics.lastDeliveryDate = new Date();
+    
+    // Calculate reliability score (simple algorithm - can be enhanced)
+    metrics.reliabilityScore = Math.min(100, 
+      (metrics.onTimeDeliveryRate * 0.6) + 
+      (Math.min(metrics.totalDeliveries * 2, 40)) // Bonus for experience
+    );
+    
+    // Mark as active supplier
+    metrics.isActiveSupplier = true;
+    
+    await supplier.save();
+  } catch (error) {
+    console.error('Error updating supplier metrics:', error);
+  }
+};
 
 export {
   createAuction,
@@ -708,4 +876,7 @@ export {
   getUpcomingAuctions,
   updatePaymentStatus,
   finalizeAuctionWinner,
+  updateDeliveryStatus,
+  setExpectedDeliveryDate,
+  getSupplierMetrics,
 };

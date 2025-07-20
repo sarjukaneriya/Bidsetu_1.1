@@ -70,33 +70,35 @@ export const socketIoConnectioin = () => {
         });
       }
       
-      let maxBidId = bids[0]._id;
-      let maxAmount = bids[0].bidAmount;
+      // Find the lowest bid (since this is a reverse auction)
+      let minBidId = bids[0]._id;
+      let minAmount = bids[0].bidAmount;
       for (let i = 1; i < bids.length; i++) {
-        if (bids[i].bidAmount > maxAmount) {
-          maxAmount = bids[i].bidAmount;
-          maxBidId = bids[i]._id;
+        if (bids[i].bidAmount < minAmount) {
+          minAmount = bids[i].bidAmount;
+          minBidId = bids[i]._id;
         }
       }
 
-      console.log(maxAmount, "maxAmount");
-      console.log(maxBidId, "maxBid");
+      console.log(minAmount, "minAmount");
+      console.log(minBidId, "minBid");
       const auction = await Auction.findById(id);
-      const winnerUser = await Bid.findById(maxBidId).populate(
+      const winnerBid = await Bid.findById(minBidId).populate(
         "bidder",
         "fullName email phone profilePicture"
       );
 
-      console.log(winnerUser, "winnerUser,,,,,,,,,,,,,,,,,lllllll");
+      console.log(winnerBid, "winnerBid,,,,,,,,,,,,,,,,,lllllll");
 
-      auction.winner = maxBidId;
+      auction.winner = minBidId; // Set winner as bid ID
+      auction.lowestBidAmount = minAmount;
       auction.status = "over";
 
       await auction.save();
 
 
       users.forEach((user) => {
-        io.to(user.socketId).emit("winnerSelected", winnerUser);
+        io.to(user.socketId).emit("winnerSelected", winnerBid);
       });
     });
 

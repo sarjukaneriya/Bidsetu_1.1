@@ -23,7 +23,7 @@ const createAuction = async (data) => {
 const getAllAuctions = async (data) => {
   try {
     //console.log(data, "data");
-    const response = await axios.post(`${API_URL}/auctions`, data);
+    const response = await axios.post(`${API_URL}/auctions/search`, data);
     //console.log("response getAllAuctions", response.data);
     return response.data;
   } catch (error) {
@@ -36,11 +36,18 @@ const getAllAuctions = async (data) => {
 
 const getSingleAuctionById = async (id) => {
   try {
-    const res = await axios.get(`${API_URL}/auctions/${id}`);
+    const res = await axios.get(`${API_URL}/auctions/${id}`, {
+      // Ensure no authentication headers are sent for public endpoint
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      // Explicitly disable credentials for public endpoint
+      withCredentials: false
+    });
     //console.log("res.data", res.data);
     return res.data;
   } catch (err) {
-    //console.error("Error in getSingleAuctionById", err);
+    console.error("Error in getSingleAuctionById", err);
     return null;
   }
 };
@@ -70,7 +77,7 @@ const selectAuctionWinner = async (data) => {
   try {
     //console.log("data selectAuctionWinner", data);
     const response = await axios.get(
-      `http://localhost:8000/api/v1/bids/${data.id}/winner`
+      `http://localhost:8000/api/v1/auctions/${data.id}/winner`
     );
     //console.log("response selectAuctionWinner", response.data);
     return response.data;

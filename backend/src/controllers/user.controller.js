@@ -17,7 +17,7 @@ const stripe = new Stripe("sk_test_51P5t81Lvvxf0OOpIgdu78eLqln3YJO5Q7NfKMfNEl93q
 // @access Public
 const registerUser = asyncHandler(async (req, res) => {
   
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, userType = "user" } = req.body;
   if (fullName == "") {
     return res.status(400).json(new ApiResponse(400, "Full name is required"));
   }
@@ -27,6 +27,12 @@ const registerUser = asyncHandler(async (req, res) => {
       .status(400)
       .json(new ApiResponse(400, "All fields are required"));
   }
+
+  // Validate userType
+  if (!["user", "seller"].includes(userType)) {
+    return res.status(400).json(new ApiResponse(400, "Invalid user type. Must be 'user' (buyer) or 'seller' (supplier)"));
+  }
+
   const existedUser = await User.findOne({
     $or: [{ fullName }, { email }],
   });
@@ -49,6 +55,7 @@ if(!customer){
     fullName: fullName.toLowerCase(),
     email,
     password,
+    userType, // Set user type during registration
   });
 
   const createdUser = await User.findById(user._id).select("-password");
@@ -589,6 +596,210 @@ const getTopCities= asyncHandler(async(req, res)=>{
   }
 })
 
+// @desc Submit business verification for suppliers
+// @route POST /api/v1/users/business-verification
+// @access Private (Suppliers only)
+const submitBusinessVerification = asyncHandler(async (req, res) => {
+  try {
+    const {
+      businessName,
+      businessType,
+      gstNumber,
+      panNumber,
+      businessAddress,
+      city,
+      state,
+      pincode,
+      phoneNumber,
+      email,
+      website,
+      businessDescription,
+      yearsInBusiness,
+      annualTurnover,
+      employeeCount,
+      certifications,
+      bankName,
+      accountNumber,
+      ifscCode,
+      accountHolderName
+    } = req.body;
+
+    // Check if user is a supplier
+    if (req.user.userType !== "seller") {
+      return res.status(403).json(new ApiResponse(403, "Only suppliers can submit business verification"));
+    }
+
+    // Validate required fields
+    if (!businessName || !businessType || !gstNumber || !panNumber || !businessAddress || !city || !state || !pincode || !phoneNumber) {
+      return res.status(400).json(new ApiResponse(400, "All required fields must be provided"));
+    }
+
+    // Validate GST number format
+    if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstNumber)) {
+      return res.status(400).json(new ApiResponse(400, "Invalid GST number format"));
+    }
+
+    // Validate PAN number format
+    if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber)) {
+      return res.status(400).json(new ApiResponse(400, "Invalid PAN number format"));
+    }
+
+    // Update user with business verification details
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        businessVerified: true,
+        businessDetails: {
+          businessName,
+          businessType,
+          gstNumber,
+          panNumber,
+          businessAddress,
+          city,
+          state,
+          pincode,
+          phoneNumber,
+          email,
+          website,
+          businessDescription,
+          yearsInBusiness,
+          annualTurnover,
+          employeeCount,
+          certifications,
+          bankName,
+          accountNumber,
+          ifscCode,
+          accountHolderName,
+          verificationDate: new Date(),
+          verificationStatus: 'approved'
+        }
+      },
+      { new: true, runValidators: false }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json(new ApiResponse(404, "User not found"));
+    }
+
+    return res.status(200).json(new ApiResponse(200, "Business verification submitted successfully", updatedUser));
+  } catch (error) {
+    console.error("Business verification error:", error);
+    return res.status(500).json(new ApiResponse(500, error?.message || "Internal server error"));
+  }
+});
+
+// @desc Get business verification status
+// @route GET /api/v1/users/business-verification
+// @access Private
+const getBusinessVerification = asyncHandler(async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    
+    if (!user) {
+      return res.status(404).json(new ApiResponse(404, "User not found"));
+    }
+
+    return res.status(200).json(new ApiResponse(200, "Business verification details retrieved", {
+      businessVerified: user.businessVerified,
+      businessDetails: user.businessDetails
+    }));
+  } catch (error) {
+    console.error("Get business verification error:", error);
+    return res.status(500).json(new ApiResponse(500, error?.message || "Internal server error"));
+  }
+});
+
+// @desc Update business verification details
+// @route PUT /api/v1/users/business-verification
+// @access Private (Suppliers only)
+const updateBusinessVerification = asyncHandler(async (req, res) => {
+  try {
+    const {
+      businessName,
+      businessType,
+      gstNumber,
+      panNumber,
+      businessAddress,
+      city,
+      state,
+      pincode,
+      phoneNumber,
+      email,
+      website,
+      businessDescription,
+      yearsInBusiness,
+      annualTurnover,
+      employeeCount,
+      certifications,
+      bankName,
+      accountNumber,
+      ifscCode,
+      accountHolderName
+    } = req.body;
+
+    // Check if user is a supplier
+    if (req.user.userType !== "seller") {
+      return res.status(403).json(new ApiResponse(403, "Only suppliers can update business verification"));
+    }
+
+    // Validate required fields
+    if (!businessName || !businessType || !gstNumber || !panNumber || !businessAddress || !city || !state || !pincode || !phoneNumber) {
+      return res.status(400).json(new ApiResponse(400, "All required fields must be provided"));
+    }
+
+    // Validate GST number format
+    if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstNumber)) {
+      return res.status(400).json(new ApiResponse(400, "Invalid GST number format"));
+    }
+
+    // Validate PAN number format
+    if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber)) {
+      return res.status(400).json(new ApiResponse(400, "Invalid PAN number format"));
+    }
+
+    // Update user with new business verification details
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        businessDetails: {
+          businessName,
+          businessType,
+          gstNumber,
+          panNumber,
+          businessAddress,
+          city,
+          state,
+          pincode,
+          phoneNumber,
+          email,
+          website,
+          businessDescription,
+          yearsInBusiness,
+          annualTurnover,
+          employeeCount,
+          certifications,
+          bankName,
+          accountNumber,
+          ifscCode,
+          accountHolderName,
+          verificationDate: new Date(),
+          verificationStatus: 'approved'
+        }
+      },
+      { new: true, runValidators: false }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json(new ApiResponse(404, "User not found"));
+    }
+
+    return res.status(200).json(new ApiResponse(200, "Business verification updated successfully", updatedUser));
+  } catch (error) {
+    console.error("Update business verification error:", error);
+    return res.status(500).json(new ApiResponse(500, error?.message || "Internal server error"));
+  }
+});
+
 
 export {
   registerUser,
@@ -605,4 +816,7 @@ export {
   deleteUserById,
   getTopSellers,
   getTopCities,
+  submitBusinessVerification,
+  getBusinessVerification,
+  updateBusinessVerification,
 };

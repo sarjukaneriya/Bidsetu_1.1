@@ -304,6 +304,8 @@ const authSlice = createSlice({
         state.isSuccess=true;
         state.message=action.payload.message;
         state.user=action.payload.data;
+        // keep user data in sync with local storage
+        localStorage.setItem("user", JSON.stringify(action.payload.data));
     })
     .addCase(submitBusinessVerification.rejected, (state, action)=>{
         state.isLoading=false;
@@ -321,6 +323,8 @@ const authSlice = createSlice({
         state.isSuccess=true;
         state.message=action.payload.message;
         state.user=action.payload.data;
+        // keep user data in sync with local storage
+        localStorage.setItem("user", JSON.stringify(action.payload.data));
     })
     .addCase(updateBusinessVerification.rejected, (state, action)=>{
         state.isLoading=false;

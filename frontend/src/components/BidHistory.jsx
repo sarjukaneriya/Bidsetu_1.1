@@ -117,26 +117,42 @@ const BidHistory = () => {
   };
 
   const calculateStats = () => {
-    if (!bidData || bidData.length === 0) return { total: 0, won: 0, lost: 0, active: 0, winRate: 0, totalBidAmount: 0, avgBidAmount: 0 };
-    
-    const total = bidData.length;
-    const won = bidData.filter((bid) => isWinningBid(bid)).length;
-    const lost = bidData.filter(
+    if (!bidData || bidData.length === 0)
+      return { total: 0, won: 0, lost: 0, active: 0, winRate: 0, totalBidAmount: 0, avgBidAmount: 0 };
+
+    // Consider only completed auctions for win/loss statistics
+    const completedBids = bidData.filter(
+      (bid) => bid.auction?.status === "completed"
+    );
+
+    const total = completedBids.length;
+    const won = completedBids.filter((bid) => isWinningBid(bid)).length;
+    const lost = completedBids.filter(
+      (bid) => bid.auction?.winner && !isWinningBid(bid)
+    ).length;
+
+    const active = bidData.filter(
       (bid) =>
-        bid.auction?.status === "completed" &&
-        bid.auction?.winner &&
-        !isWinningBid(bid)
+        new Date(bid.auction?.endTime) > new Date() &&
+        bid.auction?.status !== "completed"
     ).length;
-    const active = bidData.filter(bid =>
-      new Date(bid.auction?.endTime) > new Date() &&
-      bid.auction?.status !== "completed"
-    ).length;
-    
-    const totalBidAmount = bidData.reduce((sum, bid) => sum + bid.bidAmount, 0);
+
+    const totalBidAmount = completedBids.reduce(
+      (sum, bid) => sum + bid.bidAmount,
+      0
+    );
     const avgBidAmount = total > 0 ? Math.round(totalBidAmount / total) : 0;
     const winRate = total > 0 ? Math.round((won / total) * 100) : 0;
-    
-    return { total, won, lost, active, winRate, totalBidAmount, avgBidAmount };
+
+    return {
+      total,
+      won,
+      lost,
+      active,
+      winRate,
+      totalBidAmount,
+      avgBidAmount,
+    };
   };
 
   const stats = calculateStats();

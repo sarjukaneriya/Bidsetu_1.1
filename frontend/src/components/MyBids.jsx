@@ -78,20 +78,25 @@ const MyBids = () => {
   const calculateStats = () => {
     if (!bidData || bidData.length === 0) return { total: 0, won: 0, lost: 0, active: 0, winRate: 0 };
     
-    const total = bidData.length;
-    const won = bidData.filter((bid) => getWinnerId(bid.auction) === bid._id?.toString()).length;
-    const lost = bidData.filter(
+    const completedBids = bidData.filter(
+      (bid) => bid.auction?.status === "completed"
+    );
+
+    const total = completedBids.length;
+    const won = completedBids.filter(
+      (bid) => getWinnerId(bid.auction) === bid._id?.toString()
+    ).length;
+    const lost = completedBids.filter(
+      (bid) => bid.auction?.winner && getWinnerId(bid.auction) !== bid._id?.toString()
+    ).length;
+    const active = bidData.filter(
       (bid) =>
-        bid.auction?.status === "completed" &&
-        getWinnerId(bid.auction) !== bid._id?.toString()
+        new Date(bid.auction?.endTime) > new Date() &&
+        bid.auction?.status !== "completed"
     ).length;
-    const active = bidData.filter(bid => 
-      new Date(bid.auction?.endTime) > new Date() && 
-      bid.auction?.status !== "completed"
-    ).length;
-    
+
     const winRate = total > 0 ? Math.round((won / total) * 100) : 0;
-    
+
     return { total, won, lost, active, winRate };
   };
 

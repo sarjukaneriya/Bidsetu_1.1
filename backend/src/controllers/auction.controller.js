@@ -338,17 +338,24 @@ const updateAuctionStatus = asyncHandler(async (req, res) => {
 const getBidsAuctionsByUser = asyncHandler(async (req, res) => {
   try {
 
-    const bids = await Bid.find({ bidder: req.user._id }).populate("auction")
-    // populate category in auction
-    .populate({
-      path: "auction",
-      populate: {
-        path: "category",
-        select: "name",
-       
-      }
-    })
-    .sort({ createdAt: -1 });
+    const bids = await Bid.find({ bidder: req.user._id })
+      .populate({
+        path: "auction",
+        populate: [
+          {
+            path: "category",
+            select: "name",
+          },
+          {
+            path: "winner",
+            populate: {
+              path: "bidder",
+              select: "fullName email phone profilePicture",
+            },
+          },
+        ],
+      })
+      .sort({ createdAt: -1 });
     // it is not showing in reverse order
     
 

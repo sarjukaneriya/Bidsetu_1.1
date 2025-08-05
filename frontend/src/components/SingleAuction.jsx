@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import CountDownTimer from "../components/CountDownTimer";
 import { useState } from "react";
-import { BsCurrencyDollar } from "react-icons/bs";
 import socket from "../socket";
 // eslint-disable-next-line react/prop-types
 const SingleAuction = ({
@@ -14,7 +13,6 @@ const SingleAuction = ({
   status,
   userImage,
   userName,
-  userId,
   bids,
   winner,
   lowestBidAmount,
@@ -25,8 +23,6 @@ const SingleAuction = ({
     await setStatusData("over");
     ////console.log("handlewinner func in dashboard.,,,,,,,,,,");
   });
-
-  const logInUser = JSON.parse(localStorage.getItem("user"));
 
   // Get current lowest bid amount
   const getCurrentLowestBid = () => {

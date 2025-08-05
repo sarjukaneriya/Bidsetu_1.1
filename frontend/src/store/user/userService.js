@@ -1,16 +1,18 @@
 import axios from "axios";
+import { getValidToken } from "../../utils/auth";
 
 const API_URL = 'http://localhost:8000/api/v1';
 
+const getAuthConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${getValidToken()}`,
+  },
+});
 
-const getAllUsers=async () => {
-    const response = await axios.get(`${API_URL}/users`,{
-        withCredentials:true
-    
-    });
-        //console.log('response get all users', response.data);
-        return response.data;
-}
+const getAllUsers = async () => {
+  const response = await axios.get(`${API_URL}/users`, getAuthConfig());
+  return response.data;
+};
 
 //get single user by id
 const getUserById=async (data) => {

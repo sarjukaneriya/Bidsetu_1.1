@@ -1,13 +1,18 @@
 import axios from 'axios';
+import { getValidToken } from '../../utils/auth';
 
 const API_URL = 'http://localhost:8000/api/v1';
+
+const getAuthConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${getValidToken()}`,
+  },
+});
 
 // Submit business verification
 const submitBusinessVerification = async (businessData) => {
   try {
-    const response = await axios.post(`${API_URL}/users/business-verification`, businessData, {
-      withCredentials: true
-    });
+    const response = await axios.post(`${API_URL}/users/business-verification`, businessData, getAuthConfig());
     return response.data;
   } catch (error) {
     const message = (error.response && error.response.data.message) || error.message;
@@ -18,9 +23,7 @@ const submitBusinessVerification = async (businessData) => {
 // Get business verification status
 const getBusinessVerification = async () => {
   try {
-    const response = await axios.get(`${API_URL}/users/business-verification`, {
-      withCredentials: true
-    });
+    const response = await axios.get(`${API_URL}/users/business-verification`, getAuthConfig());
     return response.data;
   } catch (error) {
     const message = (error.response && error.response.data.message) || error.message;
@@ -31,9 +34,7 @@ const getBusinessVerification = async () => {
 // Update business verification
 const updateBusinessVerification = async (businessData) => {
   try {
-    const response = await axios.put(`${API_URL}/users/business-verification`, businessData, {
-      withCredentials: true
-    });
+    const response = await axios.put(`${API_URL}/users/business-verification`, businessData, getAuthConfig());
     return response.data;
   } catch (error) {
     const message = (error.response && error.response.data.message) || error.message;

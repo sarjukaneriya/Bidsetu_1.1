@@ -271,6 +271,18 @@ const SingleAuctionDetail = ({ noPadding }) => {
     return <Loading />;
   }
 
+  // Determine the winning bid ID
+  const winningBidId = auctionWinnerDetailData?._id || singleAuction?.winner?._id;
+
+  // Compute auction status for UI
+  let auctionStatus = singleAuction?.status;
+  if (singleAuction?.endTime && new Date(singleAuction.endTime).getTime() < Date.now()) {
+    auctionStatus = "over";
+  }
+
+  // Only show winner section if auction is over and a winner exists
+  const showWinnerSection = auctionStatus === "over" && (auctionWinnerDetailData || singleAuction?.winner);
+
   return (
     <>
       <div
@@ -407,7 +419,7 @@ const SingleAuctionDetail = ({ noPadding }) => {
             >
               {/* map over bids array */}
               {singleAuction?.bids?.length > 0 || bidsData.length > 0 ? (
-                bidsData?.map((bid) => <BidCard key={bid._id} bid={bid} />)
+                bidsData?.map((bid) => <BidCard key={bid._id} {...bid} winnerBidId={winningBidId} auctionStatus={auctionStatus} />)
               ) : (
                 <h1 className="text-white">No bids yet</h1>
               )}
@@ -444,7 +456,7 @@ const SingleAuctionDetail = ({ noPadding }) => {
           </div>
 
           {/* Winner Section */}
-          {hasWinner() && (
+          {showWinnerSection && (
             <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
               <div>
                 <h1 className="font-bold text-white text-xl mb-4">🏆 Auction Winner</h1>
@@ -589,7 +601,7 @@ const SingleAuctionDetail = ({ noPadding }) => {
           )}
 
           {/* No bids message */}
-          {hasWinner() && bidsData.length === 0 && (
+          {showWinnerSection && bidsData.length === 0 && (
             <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
               <div className="bg-theme-bg2 p-6 rounded-lg text-center">
                 <h1 className="text-white text-xl">No Bids Placed</h1>
@@ -632,12 +644,12 @@ const SingleAuctionDetail = ({ noPadding }) => {
                 <div className="flex justify-between">
                   <span className="text-body-text-color">Auction Status:</span>
                   <span className={`font-medium ${
-                    singleAuction?.status === "over" ? "text-red-400" :
-                    singleAuction?.status === "active" ? "text-green-400" :
+                    auctionStatus === "over" ? "text-red-400" :
+                    auctionStatus === "active" ? "text-green-400" :
                     "text-yellow-400"
                   }`}>
-                    {singleAuction?.status === "over" ? "Ended" :
-                     singleAuction?.status === "active" ? "Active" :
+                    {auctionStatus === "over" ? "Ended" :
+                     auctionStatus === "active" ? "Active" :
                      "Upcoming"}
                   </span>
                 </div>
@@ -653,7 +665,7 @@ const SingleAuctionDetail = ({ noPadding }) => {
             </div>
 
             {/* Show different messages based on auction status */}
-            {singleAuction?.status === "over" ? (
+            {auctionStatus === "over" ? (
               <div className="bg-red-600 p-4 rounded-lg text-center">
                 <h4 className="text-white font-medium">⏰ Auction Ended</h4>
                 <p className="text-white text-sm mt-1">This auction is no longer accepting bids.</p>

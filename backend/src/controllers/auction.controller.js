@@ -375,7 +375,7 @@ const getBidsAuctionsByUser = asyncHandler(async (req, res) => {
 
 const getAuctionsByUser = asyncHandler(async (req, res) => {
   try {
-    const auctions = await Auction.find({ User: req.user._id }).populate(
+    const auctions = await Auction.find({ user: req.user._id }).populate(
       "category",
       "name"
     )
@@ -392,9 +392,7 @@ const getAuctionsByUser = asyncHandler(async (req, res) => {
     }
 
     return res.json(
-      new ApiResponse(200, "Auctions retrieved successfully", {
-        auctions:auctions
-      })
+      new ApiResponse(200, "Auctions retrieved successfully", auctions)
     );
   } catch (error) {
     return res
@@ -778,7 +776,8 @@ const setExpectedDeliveryDate = asyncHandler(async (req, res) => {
     }
 
     // Only winner can set expected delivery date
-    if (auction.winner.toString() !== req.user._id.toString()) {
+    const winningBid = await Bid.findById(auction.winner);
+    if (!winningBid || winningBid.bidder.toString() !== req.user._id.toString()) {
       return res.status(403).json(new ApiResponse(403, "Only winner can set expected delivery date"));
     }
 

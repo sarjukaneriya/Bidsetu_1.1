@@ -131,7 +131,7 @@ const MyAuctions = () => {
                   </div>
                 </div>
                 
-                {auction.winner && (
+                {auction.status === "over" && auction.winner && (
                   <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                     <h4 className="font-semibold text-green-800 mb-2">🏆 Winner Selected</h4>
                     <div className="flex items-center gap-3">

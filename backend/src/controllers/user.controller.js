@@ -624,9 +624,9 @@ const submitBusinessVerification = asyncHandler(async (req, res) => {
       accountHolderName
     } = req.body;
 
-    // Check if user is a supplier
-    if (req.user.userType !== "seller") {
-      return res.status(403).json(new ApiResponse(403, "Only suppliers can submit business verification"));
+    // Allow both 'user' and 'seller' to submit business verification
+    if (!['user', 'seller'].includes(req.user.userType)) {
+      return res.status(403).json(new ApiResponse(403, "Only users or suppliers can submit business verification"));
     }
 
     // Validate required fields
@@ -644,11 +644,12 @@ const submitBusinessVerification = asyncHandler(async (req, res) => {
       return res.status(400).json(new ApiResponse(400, "Invalid PAN number format"));
     }
 
-    // Update user with business verification details
+    // Update user with business verification details and promote to seller
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       {
         businessVerified: true,
+        userType: 'seller',
         businessDetails: {
           businessName,
           businessType,
@@ -737,9 +738,9 @@ const updateBusinessVerification = asyncHandler(async (req, res) => {
       accountHolderName
     } = req.body;
 
-    // Check if user is a supplier
-    if (req.user.userType !== "seller") {
-      return res.status(403).json(new ApiResponse(403, "Only suppliers can update business verification"));
+    // Allow both 'user' and 'seller' to update business verification
+    if (!['user', 'seller'].includes(req.user.userType)) {
+      return res.status(403).json(new ApiResponse(403, "Only users or suppliers can update business verification"));
     }
 
     // Validate required fields
@@ -757,10 +758,12 @@ const updateBusinessVerification = asyncHandler(async (req, res) => {
       return res.status(400).json(new ApiResponse(400, "Invalid PAN number format"));
     }
 
-    // Update user with new business verification details
+    // Update user with new business verification details and promote to seller
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       {
+        businessVerified: true,
+        userType: 'seller',
         businessDetails: {
           businessName,
           businessType,

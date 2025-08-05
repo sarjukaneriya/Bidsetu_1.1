@@ -1,17 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
-import Cookies from "js-cookie";
-import { useSelector} from "react-redux";
-
+import { useSelector } from "react-redux";
+import { getValidToken } from "../utils/auth";
 
 const useAuth = () => {
-  const token = Cookies.get("JwtToken");
+  const token = getValidToken();
   const user = JSON.parse(localStorage.getItem("user"));
-
-  if(!token){
-    localStorage.removeItem("user")
+  if (!token) {
+    localStorage.removeItem("user");
   }
-  //console.log(user, "user,,,,,,,,,,,");
   return token && user;
 };
 

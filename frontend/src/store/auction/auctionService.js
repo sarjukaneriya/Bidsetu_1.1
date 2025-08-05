@@ -1,6 +1,13 @@
 import axios from "axios";
+import { getValidToken } from "../../utils/auth";
 
 const API_URL = "http://localhost:8000/api/v1";
+
+const getAuthConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${getValidToken()}`,
+  },
+});
 
 const createAuction = async (data) => {
   //console.log("data..... create auction ........", data);
@@ -8,7 +15,7 @@ const createAuction = async (data) => {
     const response = await axios.post(
       `${API_URL}/auctions/create-auction`,
       data,
-      { withCredentials: true }
+      getAuthConfig()
     );
     //console.log("response createAuction", response.data);
     return response.data;
@@ -61,7 +68,7 @@ const updateAuctionStatus = async (data) => {
     const response = await axios.post(
       `${API_URL}/auctions/${data.id}/status`,
       { status: data.status },
-      { withCredentials: true }
+      getAuthConfig()
     );
     //console.log("response updateAuctionStatus", response.data);
     return response.data;

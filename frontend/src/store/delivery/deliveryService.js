@@ -1,6 +1,13 @@
 import axios from 'axios';
+import { getValidToken } from '../../utils/auth';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+
+const getAuthConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${getValidToken()}`,
+  },
+});
 
 // Set expected delivery date (for suppliers)
 export const setExpectedDeliveryDate = async (auctionId, expectedDeliveryDate) => {
@@ -8,7 +15,7 @@ export const setExpectedDeliveryDate = async (auctionId, expectedDeliveryDate) =
     const response = await axios.put(
       `${API_URL}/auctions/${auctionId}/expected-delivery`,
       { expectedDeliveryDate },
-      { withCredentials: true }
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -23,7 +30,7 @@ export const updateDeliveryStatus = async (auctionId, deliveryData) => {
     const response = await axios.put(
       `${API_URL}/auctions/${auctionId}/delivery-status`,
       deliveryData,
-      { withCredentials: true }
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -37,7 +44,7 @@ export const getSupplierMetrics = async (supplierId) => {
   try {
     const response = await axios.get(
       `${API_URL}/auctions/supplier-metrics/${supplierId}`,
-      { withCredentials: true }
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -51,7 +58,7 @@ export const getDeliveryStatus = async (auctionId) => {
   try {
     const response = await axios.get(
       `${API_URL}/auctions/${auctionId}`,
-      { withCredentials: true }
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {

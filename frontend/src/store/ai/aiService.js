@@ -1,26 +1,20 @@
 import axios from "axios";
+import { getValidToken } from "../../utils/auth";
 
 const API_URL = "http://localhost:8000/api/v1";
 
-// Get auth token from localStorage
-const getAuthToken = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  return user?.token;
-};
-
-// Configure axios with auth token
-const config = {
+const getAuthConfig = () => ({
   headers: {
-    Authorization: `Bearer ${getAuthToken()}`,
+    Authorization: `Bearer ${getValidToken()}`,
   },
-};
+});
 
 // AI Recommendation Services
 export const getSupplierRecommendations = async (auctionId, limit = 10) => {
   try {
     const response = await axios.get(
       `${API_URL}/ai/recommendations/${auctionId}?limit=${limit}`,
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -33,7 +27,7 @@ export const getBidSuggestions = async (auctionId) => {
   try {
     const response = await axios.get(
       `${API_URL}/ai/bid-suggestions/${auctionId}`,
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -44,7 +38,7 @@ export const getBidSuggestions = async (auctionId) => {
 
 export const getUserRecommendations = async () => {
   try {
-    const response = await axios.get(`${API_URL}/ai/user-recommendations`, config);
+    const response = await axios.get(`${API_URL}/ai/user-recommendations`, getAuthConfig());
     return response.data;
   } catch (error) {
     const message = (error.response && error.response.data.message) || error.message;
@@ -57,7 +51,7 @@ export const getPricePrediction = async (auctionId) => {
   try {
     const response = await axios.get(
       `${API_URL}/ai/price-prediction/${auctionId}`,
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -70,7 +64,7 @@ export const getDemandForecast = async (categoryId, locationId, timeFrame = 'mon
   try {
     const response = await axios.get(
       `${API_URL}/ai/demand-forecast?categoryId=${categoryId}&locationId=${locationId}&timeFrame=${timeFrame}`,
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -83,7 +77,7 @@ export const getMarketTrends = async (categoryId) => {
   try {
     const response = await axios.get(
       `${API_URL}/ai/market-trends/${categoryId}`,
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -97,7 +91,7 @@ export const getWinProbability = async (auctionId, bidAmount) => {
     const response = await axios.post(
       `${API_URL}/ai/win-probability`,
       { auctionId, bidAmount },
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -112,7 +106,7 @@ export const detectFraud = async (auctionId, bidAmount) => {
     const response = await axios.post(
       `${API_URL}/ai/fraud-detection`,
       { auctionId, bidAmount },
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -127,7 +121,7 @@ export const updateUserPreferences = async (action, data) => {
     const response = await axios.post(
       `${API_URL}/ai/preferences`,
       { action, data },
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -139,7 +133,7 @@ export const updateUserPreferences = async (action, data) => {
 // AI Analytics (Admin only)
 export const getAIAnalytics = async () => {
   try {
-    const response = await axios.get(`${API_URL}/ai/analytics`, config);
+    const response = await axios.get(`${API_URL}/ai/analytics`, getAuthConfig());
     return response.data;
   } catch (error) {
     const message = (error.response && error.response.data.message) || error.message;
@@ -152,7 +146,7 @@ export const getAuctionInsights = async (auctionId) => {
   try {
     const response = await axios.get(
       `${API_URL}/ai/insights/${auctionId}`,
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {
@@ -165,7 +159,7 @@ export const getSearchSuggestions = async (query) => {
   try {
     const response = await axios.get(
       `${API_URL}/ai/search-suggestions?query=${encodeURIComponent(query)}`,
-      config
+      getAuthConfig()
     );
     return response.data;
   } catch (error) {

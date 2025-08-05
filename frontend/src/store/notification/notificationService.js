@@ -1,18 +1,18 @@
 import axios from "axios";
-
+import { getValidToken } from "../../utils/auth";
 
 const API_URL = 'http://localhost:8000/api/v1';
 
-
+const getAuthConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${getValidToken()}`,
+  },
+});
 
 export const getNotificationForUser = async () => {
-    const response = await axios.get(`${API_URL}/notifications/get-notifications`, {
-        withCredentials: true,
-        
-    });
-    //console.log(response.data, " response from getNotificationForUser");
-    return response.data;
-  };
+  const response = await axios.get(`${API_URL}/notifications/get-notifications`, getAuthConfig());
+  return response.data;
+};
 
 
 export const markNotificationAsRead= async (id) => {

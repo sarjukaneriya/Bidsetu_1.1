@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaBuilding, FaFileAlt, FaCheckCircle, FaEdit } from "react-icons/fa";
 import businessVerificationService from "../store/auth/businessVerificationService";
-import { submitBusinessVerification, updateBusinessVerification } from "../store/auth/authSlice";
+import { submitBusinessVerification, updateBusinessVerification, getCurrentUser } from "../store/auth/authSlice";
 import Loading from "./Loading";
 
 const BusinessVerification = () => {
@@ -107,6 +107,7 @@ const BusinessVerification = () => {
         toast.success(isEditing ? "Business verification updated successfully!" : "Business verification submitted successfully!");
         setIsEditing(true);
         setExistingData(result.payload.data);
+        dispatch(getCurrentUser());
       } else {
         toast.error(result.payload?.message || "Failed to submit business verification");
       }

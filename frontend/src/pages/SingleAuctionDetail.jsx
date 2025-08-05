@@ -610,28 +610,44 @@ const SingleAuctionDetail = ({ noPadding }) => {
             </div>
           )}
 
-          {/* AI Auction Insights - Show to all users */}
+          {/* AI Auction Insights - Buyer only */}
           {singleAuction && (
-            <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
-              <AIAuctionInsights 
-                auctionId={params.id} 
-                categoryId={singleAuction.category?._id}
-              />
-            </div>
+            logInUser && logInUser._id === singleAuction.user?._id ? (
+              <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
+                <AIAuctionInsights
+                  auctionId={params.id}
+                  categoryId={singleAuction.category?._id}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
+                <p className="text-gray-300">This section is not available for your role.</p>
+              </div>
+            )
           )}
 
-          {/* AI Bid Suggestions - Show only to suppliers when auction is active */}
-          {singleAuction?.status !== "over" &&
-           !auctionWinnerDetailData &&
-           auctionStarted &&
-           logInUser &&
-           logInUser._id !== singleAuction?.user?._id && (
-            <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
-              <AIBidSuggestion
-                auctionId={params.id}
-                onBidSuggestion={(suggestedAmount) => setNewBidAmount(suggestedAmount.toString())}
-              />
-            </div>
+          {/* AI Bid Assistant - Suppliers only when auction is active */}
+          {singleAuction && (
+            logInUser && logInUser._id !== singleAuction.user?._id ? (
+              auctionStatus === "active" && auctionStarted && !auctionWinnerDetailData ? (
+                <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
+                  <AIBidSuggestion
+                    auctionId={params.id}
+                    onBidSuggestion={(suggestedAmount) =>
+                      setNewBidAmount(suggestedAmount.toString())
+                    }
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
+                  <p className="text-gray-300">This section is not available for your role.</p>
+                </div>
+              )
+            ) : (
+              <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
+                <p className="text-gray-300">This section is not available for your role.</p>
+              </div>
+            )
           )}
 
           {/* Bidding Form - Always show for suppliers */}

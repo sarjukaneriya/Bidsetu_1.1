@@ -1,13 +1,27 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAuctionInsights, fetchPricePrediction, fetchMarketTrends } from '../store/ai/aiSlice';
+import {
+  fetchAuctionInsights,
+  fetchPricePrediction,
+  fetchMarketTrends,
+} from '../store/ai/aiSlice';
 import { toast } from 'react-toastify';
 
 const AIAuctionInsights = ({ auctionId, categoryId }) => {
   const dispatch = useDispatch();
-  const { auctionInsights, pricePrediction, marketTrends, loading, error } = useSelector((state) => state.ai);
+  const { user } = useSelector((state) => state.auth);
+  const {
+    auctionInsights,
+    pricePrediction,
+    marketTrends,
+    loading,
+    error,
+  } = useSelector((state) => state.ai);
 
   useEffect(() => {
+    // Only attempt to fetch insights when a user is authenticated
+    if (!user) return;
+
     if (auctionId) {
       dispatch(fetchAuctionInsights(auctionId));
       dispatch(fetchPricePrediction(auctionId));
@@ -15,7 +29,7 @@ const AIAuctionInsights = ({ auctionId, categoryId }) => {
     if (categoryId) {
       dispatch(fetchMarketTrends(categoryId));
     }
-  }, [dispatch, auctionId, categoryId]);
+  }, [dispatch, auctionId, categoryId, user]);
 
   useEffect(() => {
     if (error) {
@@ -35,13 +49,15 @@ const AIAuctionInsights = ({ auctionId, categoryId }) => {
     return 'text-yellow-500';
   };
 
-  const getCompetitionLevel = (level) => {
-    if (level === 'High') return 'text-red-500';
-    if (level === 'Medium') return 'text-yellow-500';
-    return 'text-green-500';
-  };
-
   if (!auctionId) return null;
+
+  if (!user) {
+    return (
+      <div className="bg-theme-bg2 p-6 rounded-lg border border-theme-color text-center">
+        <p className="text-gray-300">Log in to view AI Auction Insights.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-theme-bg2 p-6 rounded-lg border border-theme-color">

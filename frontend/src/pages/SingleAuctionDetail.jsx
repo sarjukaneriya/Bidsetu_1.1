@@ -621,13 +621,13 @@ const SingleAuctionDetail = ({ noPadding }) => {
           )}
 
           {/* AI Bid Suggestions - Show only to suppliers when auction is active */}
-          {!singleAuction?.status === "over" && 
-           !auctionWinnerDetailData && 
-           auctionStarted && 
-           logInUser && 
+          {singleAuction?.status !== "over" &&
+           !auctionWinnerDetailData &&
+           auctionStarted &&
+           logInUser &&
            logInUser._id !== singleAuction?.user?._id && (
             <div className="flex flex-col gap-4 pt-4 border-t border-border-info-color">
-              <AIBidSuggestion 
+              <AIBidSuggestion
                 auctionId={params.id}
                 onBidSuggestion={(suggestedAmount) => setNewBidAmount(suggestedAmount.toString())}
               />

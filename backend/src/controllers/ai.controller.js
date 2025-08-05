@@ -6,6 +6,7 @@ import aiPredictionService from "../services/aiPredictionService.js";
 import AIRecommendation from "../models/aiRecommendation.model.js";
 import AIPrediction from "../models/aiPrediction.model.js";
 import Auction from "../models/auction.model.js";
+import mongoose from "mongoose";
 
 // @desc Get AI supplier recommendations for an auction
 // @route GET /api/v1/ai/recommendations/:auctionId
@@ -14,32 +15,57 @@ const getSupplierRecommendations = asyncHandler(async (req, res) => {
   const { auctionId } = req.params;
   const { limit = 10 } = req.query;
 
+  if (!auctionId || !mongoose.Types.ObjectId.isValid(auctionId)) {
+    throw new ApiError(400, "Invalid auctionId");
+  }
+
   const recommendations = await aiRecommendationService.getSupplierRecommendations(
     auctionId,
     parseInt(limit)
   );
 
-  res.status(200).json(
-    new ApiResponse(200, recommendations, "Supplier recommendations retrieved successfully")
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Supplier recommendations retrieved successfully",
+      recommendations
+    )
   );
 });
 
 // @desc Get AI bid suggestions for a supplier
 // @route GET /api/v1/ai/bid-suggestions/:auctionId
-// @access Private
+// @access Private (Supplier only, auction must be active)
 const getBidSuggestions = asyncHandler(async (req, res) => {
   const { auctionId } = req.params;
   const supplierId = req.user._id;
 
-  const suggestions = await aiRecommendationService.getBidSuggestions(auctionId, supplierId);
+  if (!auctionId || !mongoose.Types.ObjectId.isValid(auctionId)) {
+    throw new ApiError(400, "Invalid auctionId");
+  }
+
+  const auction = await Auction.findById(auctionId).select("status");
+  if (!auction) {
+    throw new ApiError(404, "Auction not found");
+  }
+  if (auction.status !== "active") {
+    throw new ApiError(400, "Bid suggestions available only for active auctions");
+  }
+
+  const suggestions = await aiRecommendationService.getBidSuggestions(
+    auctionId,
+    supplierId
+  );
 
   if (!suggestions) {
     throw new ApiError(404, "Unable to generate bid suggestions");
   }
 
-  res.status(200).json(
-    new ApiResponse(200, suggestions, "Bid suggestions generated successfully")
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Bid suggestions generated successfully", suggestions)
+    );
 });
 
 // @desc Get AI price prediction for an auction
@@ -48,21 +74,31 @@ const getBidSuggestions = asyncHandler(async (req, res) => {
 const getPricePrediction = asyncHandler(async (req, res) => {
   const { auctionId } = req.params;
 
+  if (!auctionId || !mongoose.Types.ObjectId.isValid(auctionId)) {
+    throw new ApiError(400, "Invalid auctionId");
+  }
+
+  const auction = await Auction.findById(auctionId).select("category");
+  if (!auction) {
+    throw new ApiError(404, "Auction not found");
+  }
+
   const prediction = await aiPredictionService.predictOptimalPrice(auctionId);
 
-  // Save prediction data
-  await aiPredictionService.savePrediction('price_prediction', {
+  await aiPredictionService.savePrediction("price_prediction", {
     auctionId,
-    category: req.body.categoryId,
+    category: auction.category,
     predictedPrice: prediction.predictedPrice,
     confidence: prediction.confidence,
     factors: prediction.factors,
-    timestamp: new Date()
+    timestamp: new Date(),
   });
 
-  res.status(200).json(
-    new ApiResponse(200, prediction, "Price prediction generated successfully")
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Price prediction generated successfully", prediction)
+    );
 });
 
 // @desc Get AI demand forecast
@@ -100,10 +136,13 @@ const getDemandForecast = asyncHandler(async (req, res) => {
 const getMarketTrends = asyncHandler(async (req, res) => {
   const { categoryId } = req.params;
 
+  if (!categoryId || !mongoose.Types.ObjectId.isValid(categoryId)) {
+    throw new ApiError(400, "Invalid categoryId");
+  }
+
   const trends = await aiPredictionService.getMarketTrend(categoryId);
 
-  // Save market trend data
-  await aiPredictionService.savePrediction('market_trend', {
+  await aiPredictionService.savePrediction("market_trend", {
     category: categoryId,
     averagePrice: trends.averagePrice,
     priceVolatility: trends.priceVolatility,
@@ -111,12 +150,14 @@ const getMarketTrends = asyncHandler(async (req, res) => {
     competitionLevel: trends.competitionLevel,
     marketSize: trends.marketSize,
     growthRate: trends.growthRate,
-    timestamp: new Date()
+    timestamp: new Date(),
   });
 
-  res.status(200).json(
-    new ApiResponse(200, trends, "Market trends retrieved successfully")
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Market trends retrieved successfully", trends)
+    );
 });
 
 // @desc Detect fraud for a bid
@@ -152,31 +193,51 @@ const detectFraud = asyncHandler(async (req, res) => {
 
 // @desc Get AI win probability prediction
 // @route POST /api/v1/ai/win-probability
-// @access Private
+// @access Private (Supplier only, auction must be active)
 const getWinProbability = asyncHandler(async (req, res) => {
   const { auctionId, bidAmount } = req.body;
   const supplierId = req.user._id;
 
-  if (!auctionId || !bidAmount) {
-    throw new ApiError(400, "Auction ID and bid amount are required");
+  if (!auctionId || !mongoose.Types.ObjectId.isValid(auctionId)) {
+    throw new ApiError(400, "Invalid auctionId");
+  }
+  if (!bidAmount || isNaN(bidAmount) || Number(bidAmount) <= 0) {
+    throw new ApiError(400, "Valid bid amount is required");
   }
 
-  const probability = await aiPredictionService.predictWinProbability(auctionId, supplierId, bidAmount);
+  const auction = await Auction.findById(auctionId).select("status");
+  if (!auction) {
+    throw new ApiError(404, "Auction not found");
+  }
+  if (auction.status !== "active") {
+    throw new ApiError(400, "Win probability available only for active auctions");
+  }
 
-  // Save win probability data
-  await aiPredictionService.savePrediction('win_probability', {
+  const probability = await aiPredictionService.predictWinProbability(
+    auctionId,
+    supplierId,
+    bidAmount
+  );
+
+  await aiPredictionService.savePrediction("win_probability", {
     auctionId,
     supplierId,
     bidAmount,
     winProbability: probability.winProbability,
     factors: probability.factors,
     recommendedBid: probability.recommendedBid,
-    timestamp: new Date()
+    timestamp: new Date(),
   });
 
-  res.status(200).json(
-    new ApiResponse(200, probability, "Win probability calculated successfully")
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        "Win probability calculated successfully",
+        probability
+      )
+    );
 });
 
 // @desc Update user AI preferences
@@ -283,30 +344,40 @@ const getAIAnalytics = asyncHandler(async (req, res) => {
 const getAuctionInsights = asyncHandler(async (req, res) => {
   const { auctionId } = req.params;
 
-  // Get price prediction
+  if (!auctionId || !mongoose.Types.ObjectId.isValid(auctionId)) {
+    throw new ApiError(400, "Invalid auctionId");
+  }
+
+  const auction = await Auction.findById(auctionId).populate("category");
+  if (!auction) {
+    throw new ApiError(404, "Auction not found");
+  }
+
   const pricePrediction = await aiPredictionService.predictOptimalPrice(auctionId);
-  
-  // Get supplier recommendations
-  const recommendations = await aiRecommendationService.getSupplierRecommendations(auctionId, 5);
-  
-  // Get market trends for this category
-  const auction = await Auction.findById(auctionId).populate('category');
-  const marketTrends = auction ? await aiPredictionService.getMarketTrend(auction.category._id) : null;
+
+  const topSuppliers =
+    (await aiRecommendationService.getSupplierRecommendations(auctionId, 3)) || [];
+
+  const marketTrends = await aiPredictionService.getMarketTrend(
+    auction.category._id
+  );
 
   const insights = {
     pricePrediction,
-    topSuppliers: recommendations.slice(0, 3),
     marketTrends,
     auctionAnalysis: {
-      competitionLevel: recommendations.length > 0 ? 'High' : 'Low',
-      expectedBids: Math.round(recommendations.length * 1.5),
-      successProbability: pricePrediction.confidence
-    }
+      competitionLevel: topSuppliers.length > 0 ? "High" : "Low",
+      expectedBids: Math.round(topSuppliers.length * 1.5),
+      successProbability: pricePrediction.confidence,
+    },
+    topSuppliers,
   };
 
-  res.status(200).json(
-    new ApiResponse(200, insights, "Auction insights retrieved successfully")
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Auction insights retrieved successfully", insights)
+    );
 });
 
 // @desc Get AI-powered search suggestions

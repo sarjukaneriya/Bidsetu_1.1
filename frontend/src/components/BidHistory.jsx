@@ -87,7 +87,7 @@ const BidHistory = () => {
   }, [bidData, filter, sortBy]);
 
   const getBidStatus = (bid, auction) => {
-    if (isWinningBid(bid)) {
+    if (auction.status === "completed" && isWinningBid(bid)) {
       return (
         <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
           <FaTrophy /> Won
@@ -100,9 +100,17 @@ const BidHistory = () => {
         </span>
       );
     } else if (new Date(auction.endTime) < new Date()) {
-      return <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center gap-1"><FaClock /> Expired</span>;
+      return (
+        <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center gap-1">
+          <FaClock /> Expired
+        </span>
+      );
     } else {
-      return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1"><FaClock /> Active</span>;
+      return (
+        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1">
+          <FaClock /> Active
+        </span>
+      );
     }
   };
 

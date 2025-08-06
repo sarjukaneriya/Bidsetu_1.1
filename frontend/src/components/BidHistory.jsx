@@ -21,9 +21,15 @@ const BidHistory = () => {
   const isWinningBid = (bid) => {
     const winner = bid.auction?.winner;
     if (!winner) return false;
+
+    return typeof winner === "string"
+      ? bid._id?.toString() === String(winner)
+      : bid._id?.toString() === String(winner._id);
+
     const winnerId =
       typeof winner === "object" ? winner._id?.toString() : winner?.toString();
     return bid._id?.toString() === winnerId;
+
   };
 
   useEffect(() => {

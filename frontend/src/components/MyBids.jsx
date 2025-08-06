@@ -32,8 +32,8 @@ const MyBids = () => {
   const getWinnerId = (auction) => {
     if (!auction?.winner) return null;
     return typeof auction.winner === "object"
-      ? auction.winner._id?.toString()
-      : auction.winner?.toString();
+      ? String(auction.winner._id)
+      : String(auction.winner);
   };
 
 
@@ -79,6 +79,7 @@ const MyBids = () => {
   };
 
 
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -96,14 +97,16 @@ const MyBids = () => {
     const total = bidData.length;
     const won = bidData.filter(
       (bid) =>
+
         ["completed", "over"].includes(bid.auction?.status) &&
         getWinnerId(bid.auction) === bid._id?.toString()
+
     ).length;
     const lost = bidData.filter(
       (bid) =>
         ["completed", "over"].includes(bid.auction?.status) &&
         bid.auction?.winner &&
-        getWinnerId(bid.auction) !== bid._id?.toString()
+        String(getWinnerId(bid.auction)) !== bid._id?.toString()
     ).length;
     const active = bidData.filter(
       (bid) =>
@@ -228,7 +231,9 @@ const MyBids = () => {
                     </div>
                   </div>
 
+
                     {bid.auction?.winner && ["completed", "over"].includes(bid.auction?.status) && winnerId === bid._id?.toString() && (
+
                       <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <h4 className="font-semibold text-green-800 mb-2">🎉 Congratulations! You Won!</h4>
                         <p className="text-sm text-green-600">
@@ -237,7 +242,9 @@ const MyBids = () => {
                       </div>
                     )}
 
+
                   {bid.auction?.winner && winnerId !== bid._id?.toString() && ["completed", "over"].includes(bid.auction.status) && (
+
                     <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                       <h4 className="font-semibold text-red-800 mb-2">Better luck next time!</h4>
                       <p className="text-sm text-red-600">

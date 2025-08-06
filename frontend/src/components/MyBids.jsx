@@ -38,7 +38,7 @@ const MyBids = () => {
 
   const getBidStatus = (bid, auction) => {
     const winnerId = getWinnerId(auction);
-    if (winnerId && winnerId === bid._id?.toString()) {
+    if (auction.status === "completed" && winnerId && winnerId === bid._id?.toString()) {
       return (
         <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
           <FaTrophy /> Won

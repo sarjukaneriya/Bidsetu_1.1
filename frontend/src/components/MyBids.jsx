@@ -37,34 +37,46 @@ const MyBids = () => {
   };
 
 
-    const getBidStatus = (bid, auction) => {
-      const winnerId = getWinnerId(auction);
-      if (auction.status === "completed" && winnerId && winnerId === bid._id?.toString()) {
-        return (
-          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
-            <FaTrophy /> Won
-          </span>
-        );
-      } else if (auction.status === "completed" && winnerId && winnerId !== bid._id?.toString()) {
-        return (
-          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs flex items-center gap-1">
-            <FaTimesCircle /> Lost
-          </span>
-        );
-      } else if (new Date(auction.endTime) < new Date()) {
-        return (
-          <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center gap-1">
-            <FaClock /> Expired
-          </span>
-        );
-      } else {
-        return (
-          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1">
-            <FaClock /> Active
-          </span>
-        );
-      }
-    };
+  const getBidStatus = (bid, auction) => {
+    const winnerId = getWinnerId(auction);
+    const isExpired = ["over", "completed"].includes(auction.status);
+    const isWinner = winnerId && winnerId === bid._id?.toString();
+
+    const auctionLabel = isExpired ? (
+      <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center gap-1">
+        <FaClock /> Expired
+      </span>
+    ) : (
+      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1">
+        <FaClock /> Active
+      </span>
+    );
+
+    let resultLabel = null;
+    if (isExpired && auction.winner) {
+      resultLabel = isWinner ? (
+        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
+          <FaTrophy /> Win
+        </span>
+      ) : (
+        <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs flex items-center gap-1">
+          <FaTimesCircle /> Loss
+        </span>
+      );
+    }
+
+    return (
+      <span className="flex items-center gap-1">
+        {auctionLabel}
+        {resultLabel && (
+          <>
+            <span className="text-gray-400">·</span>
+            {resultLabel}
+          </>
+        )}
+      </span>
+    );
+  };
 
 
   const formatDate = (dateString) => {
@@ -84,19 +96,19 @@ const MyBids = () => {
     const total = bidData.length;
     const won = bidData.filter(
       (bid) =>
-        bid.auction?.status === "completed" &&
+        ["completed", "over"].includes(bid.auction?.status) &&
         getWinnerId(bid.auction) === bid._id?.toString()
     ).length;
     const lost = bidData.filter(
       (bid) =>
-        bid.auction?.status === "completed" &&
+        ["completed", "over"].includes(bid.auction?.status) &&
         bid.auction?.winner &&
         getWinnerId(bid.auction) !== bid._id?.toString()
     ).length;
     const active = bidData.filter(
       (bid) =>
         new Date(bid.auction?.endTime) > new Date() &&
-        bid.auction?.status !== "completed"
+        !["completed", "over"].includes(bid.auction?.status)
     ).length;
 
     return { total, won, lost, active };
@@ -216,7 +228,7 @@ const MyBids = () => {
                     </div>
                   </div>
 
-                    {bid.auction?.winner && bid.auction?.status === "completed" && winnerId === bid._id?.toString() && (
+                    {bid.auction?.winner && ["completed", "over"].includes(bid.auction?.status) && winnerId === bid._id?.toString() && (
                       <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <h4 className="font-semibold text-green-800 mb-2">🎉 Congratulations! You Won!</h4>
                         <p className="text-sm text-green-600">
@@ -225,7 +237,7 @@ const MyBids = () => {
                       </div>
                     )}
 
-                  {bid.auction?.winner && winnerId !== bid._id?.toString() && bid.auction.status === "completed" && (
+                  {bid.auction?.winner && winnerId !== bid._id?.toString() && ["completed", "over"].includes(bid.auction.status) && (
                     <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                       <h4 className="font-semibold text-red-800 mb-2">Better luck next time!</h4>
                       <p className="text-sm text-red-600">

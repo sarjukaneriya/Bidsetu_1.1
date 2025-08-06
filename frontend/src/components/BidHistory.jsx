@@ -195,8 +195,8 @@ const BidHistory = () => {
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-600 font-medium">Win Rate</p>
-                <p className="text-2xl font-bold text-green-800">{stats.winRate}%</p>
+                <p className="text-sm text-green-600 font-medium">Won Bids</p>
+                <p className="text-2xl font-bold text-green-800">{stats.won}</p>
               </div>
               <FaTrophy className="text-green-600" size={20} />
             </div>

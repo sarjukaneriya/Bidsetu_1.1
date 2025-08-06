@@ -21,9 +21,15 @@ const BidHistory = () => {
   const isWinningBid = (bid) => {
     const winner = bid.auction?.winner;
     if (!winner) return false;
+
     return typeof winner === "string"
       ? bid._id?.toString() === String(winner)
       : bid._id?.toString() === String(winner._id);
+
+    const winnerId =
+      typeof winner === "object" ? winner._id?.toString() : winner?.toString();
+    return bid._id?.toString() === winnerId;
+
   };
 
   useEffect(() => {
@@ -52,19 +58,22 @@ const BidHistory = () => {
       case "lost":
         filtered = filtered.filter(
           (bid) =>
-            bid.auction?.status === "completed" &&
+            ["completed", "over"].includes(bid.auction?.status) &&
             bid.auction?.winner &&
             !isWinningBid(bid)
         );
         break;
       case "active":
-        filtered = filtered.filter(bid =>
-          new Date(bid.auction?.endTime) > new Date() &&
-          bid.auction?.status !== "completed"
+        filtered = filtered.filter(
+          (bid) =>
+            !["completed", "over"].includes(bid.auction?.status) &&
+            new Date(bid.auction?.endTime) > new Date()
         );
         break;
       case "expired":
-        filtered = filtered.filter(bid => new Date(bid.auction?.endTime) < new Date());
+        filtered = filtered.filter((bid) =>
+          ["completed", "over"].includes(bid.auction?.status)
+        );
         break;
       default:
         break;
@@ -89,31 +98,43 @@ const BidHistory = () => {
   }, [bidData, filter, sortBy]);
 
   const getBidStatus = (bid, auction) => {
-    if (auction.status === "completed" && isWinningBid(bid)) {
-      return (
+    const isExpired = ["over", "completed"].includes(auction.status);
+    const isWinner = isWinningBid(bid);
+
+    const auctionLabel = isExpired ? (
+      <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center gap-1">
+        <FaClock /> Expired
+      </span>
+    ) : (
+      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1">
+        <FaClock /> Active
+      </span>
+    );
+
+    let resultLabel = null;
+    if (isExpired && auction.winner) {
+      resultLabel = isWinner ? (
         <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
-          <FaTrophy /> Won
+          <FaTrophy /> Win
         </span>
-      );
-    } else if (auction.status === "completed" && auction.winner && !isWinningBid(bid)) {
-      return (
+      ) : (
         <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs flex items-center gap-1">
-          <FaTimesCircle /> Lost
-        </span>
-      );
-    } else if (new Date(auction.endTime) < new Date()) {
-      return (
-        <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center gap-1">
-          <FaClock /> Expired
-        </span>
-      );
-    } else {
-      return (
-        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1">
-          <FaClock /> Active
+          <FaTimesCircle /> Loss
         </span>
       );
     }
+
+    return (
+      <span className="flex items-center gap-1">
+        {auctionLabel}
+        {resultLabel && (
+          <>
+            <span className="text-gray-400">·</span>
+            {resultLabel}
+          </>
+        )}
+      </span>
+    );
   };
 
   const formatDate = (dateString) => {
@@ -131,8 +152,8 @@ const BidHistory = () => {
       return { total: 0, won: 0, lost: 0, active: 0, winRate: 0, totalBidAmount: 0, avgBidAmount: 0 };
 
     // Consider only completed auctions for win/loss statistics
-    const completedBids = bidData.filter(
-      (bid) => bid.auction?.status === "completed"
+    const completedBids = bidData.filter((bid) =>
+      ["completed", "over"].includes(bid.auction?.status)
     );
 
     const total = completedBids.length;
@@ -144,7 +165,7 @@ const BidHistory = () => {
     const active = bidData.filter(
       (bid) =>
         new Date(bid.auction?.endTime) > new Date() &&
-        bid.auction?.status !== "completed"
+        !["completed", "over"].includes(bid.auction?.status)
     ).length;
 
     const totalBidAmount = completedBids.reduce(
@@ -306,7 +327,7 @@ const BidHistory = () => {
                   </div>
                 </div>
                 
-                {bid.auction?.winner && bid.auction?.status === "completed" && isWinningBid(bid) && (
+                {bid.auction?.winner && ["completed", "over"].includes(bid.auction?.status) && isWinningBid(bid) && (
                   <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                     <h4 className="font-semibold text-green-800 mb-2">🎉 Congratulations! You Won!</h4>
                     <p className="text-sm text-green-600">
@@ -315,7 +336,7 @@ const BidHistory = () => {
                   </div>
                 )}
 
-                {bid.auction?.winner && !isWinningBid(bid) && bid.auction.status === "completed" && (
+                {bid.auction?.winner && !isWinningBid(bid) && ["completed", "over"].includes(bid.auction.status) && (
                   <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                     <h4 className="font-semibold text-red-800 mb-2">Better luck next time!</h4>
                     <p className="text-sm text-red-600">

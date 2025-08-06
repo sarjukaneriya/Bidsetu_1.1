@@ -304,7 +304,7 @@ const BidHistory = () => {
                   </div>
                 </div>
                 
-                {bid.auction?.winner && isWinningBid(bid) && (
+                {bid.auction?.winner && bid.auction?.status === "completed" && isWinningBid(bid) && (
                   <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                     <h4 className="font-semibold text-green-800 mb-2">🎉 Congratulations! You Won!</h4>
                     <p className="text-sm text-green-600">

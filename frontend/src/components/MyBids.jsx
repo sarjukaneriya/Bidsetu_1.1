@@ -32,20 +32,20 @@ const MyBids = () => {
   const getWinnerId = (auction) => {
     if (!auction?.winner) return null;
     return typeof auction.winner === "object"
-      ? auction.winner._id?.toString()
-      : auction.winner?.toString();
+      ? String(auction.winner._id)
+      : String(auction.winner);
   };
 
 
     const getBidStatus = (bid, auction) => {
       const winnerId = getWinnerId(auction);
-      if (auction.status === "completed" && winnerId && winnerId === bid._id?.toString()) {
+      if (auction.status === "completed" && winnerId && bid._id?.toString() === String(winnerId)) {
         return (
           <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
             <FaTrophy /> Won
           </span>
         );
-      } else if (auction.status === "completed" && winnerId && winnerId !== bid._id?.toString()) {
+      } else if (auction.status === "completed" && winnerId && bid._id?.toString() !== String(winnerId)) {
         return (
           <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs flex items-center gap-1">
             <FaTimesCircle /> Lost
@@ -85,13 +85,13 @@ const MyBids = () => {
     const won = bidData.filter(
       (bid) =>
         bid.auction?.status === "completed" &&
-        getWinnerId(bid.auction) === bid._id?.toString()
+        String(getWinnerId(bid.auction)) === bid._id?.toString()
     ).length;
     const lost = bidData.filter(
       (bid) =>
         bid.auction?.status === "completed" &&
         bid.auction?.winner &&
-        getWinnerId(bid.auction) !== bid._id?.toString()
+        String(getWinnerId(bid.auction)) !== bid._id?.toString()
     ).length;
     const active = bidData.filter(
       (bid) =>
@@ -216,7 +216,7 @@ const MyBids = () => {
                     </div>
                   </div>
 
-                    {bid.auction?.winner && bid.auction?.status === "completed" && winnerId === bid._id?.toString() && (
+                    {bid.auction?.winner && bid.auction?.status === "completed" && bid._id?.toString() === String(winnerId) && (
                       <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <h4 className="font-semibold text-green-800 mb-2">🎉 Congratulations! You Won!</h4>
                         <p className="text-sm text-green-600">
@@ -225,7 +225,7 @@ const MyBids = () => {
                       </div>
                     )}
 
-                  {bid.auction?.winner && winnerId !== bid._id?.toString() && bid.auction.status === "completed" && (
+                  {bid.auction?.winner && bid._id?.toString() !== String(winnerId) && bid.auction.status === "completed" && (
                     <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                       <h4 className="font-semibold text-red-800 mb-2">Better luck next time!</h4>
                       <p className="text-sm text-red-600">

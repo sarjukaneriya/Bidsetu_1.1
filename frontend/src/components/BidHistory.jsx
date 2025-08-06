@@ -87,7 +87,7 @@ const BidHistory = () => {
   }, [bidData, filter, sortBy]);
 
   const getBidStatus = (bid, auction) => {
-    if (isWinningBid(bid)) {
+    if (auction.status === "completed" && isWinningBid(bid)) {
       return (
         <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
           <FaTrophy /> Won
@@ -296,7 +296,7 @@ const BidHistory = () => {
                   </div>
                 </div>
                 
-                {bid.auction?.winner && isWinningBid(bid) && (
+                {bid.auction?.winner && bid.auction?.status === "completed" && isWinningBid(bid) && (
                   <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                     <h4 className="font-semibold text-green-800 mb-2">🎉 Congratulations! You Won!</h4>
                     <p className="text-sm text-green-600">

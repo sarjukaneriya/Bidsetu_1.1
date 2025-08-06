@@ -36,34 +36,34 @@ const MyBids = () => {
       : auction.winner?.toString();
   };
 
-  const getBidStatus = (bid, auction) => {
-    const winnerId = getWinnerId(auction);
-    if (winnerId && winnerId === bid._id?.toString()) {
-      return (
-        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
-          <FaTrophy /> Won
-        </span>
-      );
-    } else if (auction.status === "completed" && winnerId && winnerId !== bid._id?.toString()) {
-      return (
-        <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs flex items-center gap-1">
-          <FaTimesCircle /> Lost
-        </span>
-      );
-    } else if (new Date(auction.endTime) < new Date()) {
-      return (
-        <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center gap-1">
-          <FaClock /> Expired
-        </span>
-      );
-    } else {
-      return (
-        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1">
-          <FaClock /> Active
-        </span>
-      );
-    }
-  };
+    const getBidStatus = (bid, auction) => {
+      const winnerId = getWinnerId(auction);
+      if (auction.status === "completed" && winnerId && winnerId === bid._id?.toString()) {
+        return (
+          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs flex items-center gap-1">
+            <FaTrophy /> Won
+          </span>
+        );
+      } else if (auction.status === "completed" && winnerId && winnerId !== bid._id?.toString()) {
+        return (
+          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs flex items-center gap-1">
+            <FaTimesCircle /> Lost
+          </span>
+        );
+      } else if (new Date(auction.endTime) < new Date()) {
+        return (
+          <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center gap-1">
+            <FaClock /> Expired
+          </span>
+        );
+      } else {
+        return (
+          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs flex items-center gap-1">
+            <FaClock /> Active
+          </span>
+        );
+      }
+    };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -214,14 +214,14 @@ const MyBids = () => {
                     </div>
                   </div>
 
-                  {bid.auction?.winner && winnerId === bid._id?.toString() && (
-                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <h4 className="font-semibold text-green-800 mb-2">🎉 Congratulations! You Won!</h4>
-                      <p className="text-sm text-green-600">
-                        Your bid of ${bid.bidAmount} was selected as the winning bid for this auction.
-                      </p>
-                    </div>
-                  )}
+                    {bid.auction?.winner && bid.auction?.status === "completed" && winnerId === bid._id?.toString() && (
+                      <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <h4 className="font-semibold text-green-800 mb-2">🎉 Congratulations! You Won!</h4>
+                        <p className="text-sm text-green-600">
+                          Your bid of ${bid.bidAmount} was selected as the winning bid for this auction.
+                        </p>
+                      </div>
+                    )}
 
                   {bid.auction?.winner && winnerId !== bid._id?.toString() && bid.auction.status === "completed" && (
                     <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">

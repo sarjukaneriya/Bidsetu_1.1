@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Loading from "./Loading";
 import { Link } from "react-router-dom";
-import { FaEye, FaTrophy, FaClock, FaCheckCircle, FaTimesCircle, FaChartLine } from "react-icons/fa";
+import { FaEye, FaTrophy, FaClock, FaTimesCircle, FaChartLine } from "react-icons/fa";
 
 const MyBids = () => {
   const dispatch = useDispatch();
@@ -36,6 +36,7 @@ const MyBids = () => {
       : auction.winner?.toString();
   };
 
+
     const getBidStatus = (bid, auction) => {
       const winnerId = getWinnerId(auction);
       if (auction.status === "completed" && winnerId && winnerId === bid._id?.toString()) {
@@ -65,6 +66,7 @@ const MyBids = () => {
       }
     };
 
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -76,18 +78,20 @@ const MyBids = () => {
   };
 
   const calculateStats = () => {
-    if (!bidData || bidData.length === 0) return { total: 0, won: 0, lost: 0, active: 0, winRate: 0 };
-    
-    const completedBids = bidData.filter(
-      (bid) => bid.auction?.status === "completed"
-    );
+    if (!bidData || bidData.length === 0)
+      return { total: 0, won: 0, lost: 0, active: 0 };
 
-    const total = completedBids.length;
-    const won = completedBids.filter(
-      (bid) => getWinnerId(bid.auction) === bid._id?.toString()
+    const total = bidData.length;
+    const won = bidData.filter(
+      (bid) =>
+        bid.auction?.status === "completed" &&
+        getWinnerId(bid.auction) === bid._id?.toString()
     ).length;
-    const lost = completedBids.filter(
-      (bid) => bid.auction?.winner && getWinnerId(bid.auction) !== bid._id?.toString()
+    const lost = bidData.filter(
+      (bid) =>
+        bid.auction?.status === "completed" &&
+        bid.auction?.winner &&
+        getWinnerId(bid.auction) !== bid._id?.toString()
     ).length;
     const active = bidData.filter(
       (bid) =>
@@ -95,9 +99,7 @@ const MyBids = () => {
         bid.auction?.status !== "completed"
     ).length;
 
-    const winRate = total > 0 ? Math.round((won / total) * 100) : 0;
-
-    return { total, won, lost, active, winRate };
+    return { total, won, lost, active };
   };
 
   const stats = calculateStats();
@@ -152,10 +154,10 @@ const MyBids = () => {
           <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-orange-600 font-medium">Win Rate</p>
-                <p className="text-2xl font-bold text-orange-800">{stats.winRate}%</p>
+                <p className="text-sm text-orange-600 font-medium">Active Bids</p>
+                <p className="text-2xl font-bold text-orange-800">{stats.active}</p>
               </div>
-              <FaCheckCircle className="text-orange-600" size={20} />
+              <FaClock className="text-orange-600" size={20} />
             </div>
           </div>
         </div>
@@ -258,4 +260,4 @@ const MyBids = () => {
   );
 };
 
-export default MyBids; 
+export default MyBids;

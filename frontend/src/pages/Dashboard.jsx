@@ -1,6 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { reset } from "../store/auth/authSlice";
 import { getAllAuctions } from "../store/auction/auctionSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,7 +7,6 @@ import SingleAuction from "../components/SingleAuction";
 import SearchLocationCategory from "../components/SearchLocationCategory";
 import Loading from "../components/Loading";
 import Pagination from "../components/Pagination";
-import axios from "axios";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -22,7 +20,7 @@ const Dashboard = () => {
   useEffect(() => {
     dispatch(getAllAuctions());
     //console.log("dispatched");
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (isSuccess) {
@@ -30,11 +28,11 @@ const Dashboard = () => {
     } else if (isError) {
       toast.error(message);
     }
-  }, [auction]);
+  }, [auction, isError, isSuccess, message]);
 
   //pagination part
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setitemsPerPage] = useState(12);
+  const [itemsPerPage] = useState(12);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = auctionData?.slice(indexOfFirstItem, indexOfLastItem);
@@ -67,20 +65,17 @@ const Dashboard = () => {
               <div key={index}>
                 <SingleAuction
                   name={item?.name}
-                  startingPrice={item?.startingPrice}
+                  budget={item?.budget}
                   image={item?.image}
                   endTime={item?.endTime}
                   startTime={item?.startTime}
                   id={item?._id}
                   status={item?.status}
-                  sellerImage={item?.seller?.profilePicture}
-                  sellerName={item?.seller?.fullName}
-                  sellerId={item?.seller?._id}
-                  bidLength={item?.bids?.length}
-                  winnerFullName={item?.winner?.bidder?.fullName}
-                  winnerProfilePicture={item?.winner?.bidder?.profilePicture}
-                  winnerBidAmount={item?.winner?.bidAmount}
-                  winnerBidTime={item?.winner?.bidTime}
+                  userImage={item?.user?.profilePicture}
+                  userName={item?.user?.fullName}
+                  bids={item?.bids}
+                  winner={item?.winner}
+                  lowestBidAmount={item?.lowestBidAmount}
                 />
               </div>
             ))}{" "}

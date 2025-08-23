@@ -84,13 +84,17 @@ export const getSellerAuction = createAsyncThunk(
 
 export const getAuctionsByUser = createAsyncThunk(
   "auction/getAuctionsByUser",
-  async (userId, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      return await auctionService.getSellerAuction();
+      const response = await auctionService.getAuctionsByUser();
+      if (response?.isError) {
+        return thunkAPI.rejectWithValue({ message: response.message });
+      }
+      return response;
     } catch (error) {
       const message =
         (error.response && error.response.data.message) || error.message;
-      return thunkAPI.rejectWithValue({ message, isError: true });
+      return thunkAPI.rejectWithValue({ message });
     }
   }
 );

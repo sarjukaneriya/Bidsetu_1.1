@@ -111,6 +111,20 @@ const getSellerAuction = async () => {
   }
 };
 
+const getAuctionsByUser = async () => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/auctions/user-auctions`,
+      getAuthConfig()
+    );
+    return response.data;
+  } catch (error) {
+    const message =
+      (error.response && error.response.data.message) || error.message;
+    return { message, isError: true };
+  }
+};
+
 const deleteSingleAuctionById = async (id) => {
   try {
     const response = await axios.delete(`${API_URL}/auctions/delete/${id}`, {
@@ -215,6 +229,7 @@ const auctionService = {
   updateAuctionStatus,
   selectAuctionWinner,
   getSellerAuction,
+  getAuctionsByUser,
   deleteSingleAuctionById,
   updateSingleAuction,
   getLiveAuctions,
